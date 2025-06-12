@@ -93,9 +93,9 @@ impl Board {
         let cur_x = curr_pos.x;
         let cur_y = curr_pos.y;
         match tetromino_move {
-            TetrominoMove::Down  => return Cursor::from(curr, Position {x: cur_x    , y: cur_y + 1}),
-            TetrominoMove::Left  => return Cursor::from(curr, Position {x: cur_x - 1, y: cur_y}),
-            TetrominoMove::Right => return Cursor::from(curr, Position {x: cur_x + 1, y: cur_y}),
+            TetrominoMove::Down  => return curr.offset_copy(Position {x: cur_x    , y: cur_y + 1}),
+            TetrominoMove::Left  => return curr.offset_copy(Position {x: cur_x - 1, y: cur_y}),
+            TetrominoMove::Right => return curr.offset_copy(Position {x: cur_x + 1, y: cur_y}),
             TetrominoMove::RotateCW => return curr.clone(),
             TetrominoMove::RotateCCW => return curr.clone(),
         }
