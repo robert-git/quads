@@ -4,6 +4,7 @@ mod tetromino_move;
 mod user_action;
 
 use board::Board;
+use draw::Renderer;
 use macroquad::color::colors::LIGHTGRAY;
 use macroquad::prelude::{
     clear_background, get_keys_down, get_keys_pressed, is_key_down, next_frame,
@@ -25,6 +26,11 @@ const BOARD_HEIGHT: f32 = WINDOW_HEIGHT - BOTTOM_MARGIN_HEIGHT;
 #[macroquad::main("Quads")]
 async fn main() {
     let mut gp = initialize_game();
+
+    let mut renderer = Renderer::new(draw::SizeInPixels {
+        width: BOARD_WIDTH,
+        height: BOARD_HEIGHT,
+    });
 
     loop {
         if gp.game_over {
@@ -66,13 +72,7 @@ async fn main() {
                 }
             }
 
-            draw::draw(
-                &gp.board,
-                draw::SizeInPixels {
-                    width: BOARD_WIDTH,
-                    height: BOARD_HEIGHT,
-                },
-            );
+            renderer.draw(&mut gp.board);
 
             gp.opt_tetromino_move = None;
         }

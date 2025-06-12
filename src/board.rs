@@ -10,7 +10,7 @@ use macroquad::prelude::rand;
 use position::Position;
 use std::collections::VecDeque;
 
-type Row = Vec<Cell>;
+pub type Row = Vec<Cell>;
 
 pub struct Board {
     num_visible_rows: usize,
@@ -22,6 +22,7 @@ pub struct Board {
     cursor: Cursor,
     next_shape_candidates: Vec<Shape>,
     score: i32,
+    row_removal_animation_is_pending: bool,
 }
 
 const NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS: usize = 4;
@@ -74,6 +75,7 @@ impl Board {
             cursor_queue,
             next_shape_candidates,
             score: 0,
+            row_removal_animation_is_pending: false,
         }
     }
 
@@ -164,6 +166,9 @@ impl Board {
         let new_rows = vec![vec![Cell::new(); self.num_cols]; num_removed_rows];
         self.rows.splice(0..0, new_rows);
         self.score += get_points(num_removed_rows);
+        if num_removed_rows > 0 {
+            self.row_removal_animation_is_pending = true;
+        }
     }
 
     fn stack_height(&self) -> usize {
@@ -220,6 +225,14 @@ impl Board {
 
     pub fn score(&self) -> i32 {
         self.score
+    }
+
+    pub fn row_removal_animation_is_pending(&self) -> bool {
+        self.row_removal_animation_is_pending
+    }
+
+    pub fn set_row_removal_animation_is_pending_to_false(&mut self) {
+        self.row_removal_animation_is_pending = false;
     }
 }
 

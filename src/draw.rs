@@ -1,30 +1,92 @@
 use super::board::cell;
+use super::board::cursor;
 use super::board::cursor::piece::Piece;
 use super::board::position::Position;
 use super::board::Board;
 use macroquad::color::colors::*;
 use macroquad::color::Color;
 use macroquad::prelude::{
-    clear_background, draw_rectangle, draw_rectangle_lines, draw_text, measure_text, screen_height,
-    screen_width,
+    clear_background, draw_rectangle, draw_rectangle_lines, draw_text, measure_text, next_frame,
+    screen_height, screen_width,
 };
+use std::thread;
 
 const LINE_THICKNESS: f32 = 2.0;
 
+#[derive(Clone)]
 pub struct SizeInPixels {
     pub width: f32,
     pub height: f32,
 }
 
-pub fn draw(board: &Board, canvas_size: SizeInPixels) {
-    let num_board_cols = board.num_cols();
-    let visible_rows = board.visible_rows();
+#[derive(Clone)]
+struct BoardState {
+    num_cols: usize,
+    visible_rows: Vec<super::board::Row>,
+    next_piece: cursor::piece::Piece,
+    score: i32,
+    ghost_cursor_positions: Vec<Position>,
+    num_hidden_rows: usize,
+}
+
+pub struct Renderer {
+    canvas_size: SizeInPixels,
+    previous_board_state: Option<BoardState>,
+}
+
+impl Renderer {
+    pub fn new(canvas_size: SizeInPixels) -> Self {
+        Renderer {
+            canvas_size,
+            previous_board_state: None,
+        }
+    }
+
+    pub fn draw(&mut self, board: &mut Board) {
+        let curr_board_state = get_board_state(&board);
+        if board.row_removal_animation_is_pending() {
+            for _ in 0..10 {
+                draw_helper(
+                    self.previous_board_state.clone().unwrap(),
+                    &self.canvas_size,
+                );
+                thread::sleep(std::time::Duration::from_millis(100));
+                next_frame();
+            }
+            board.set_row_removal_animation_is_pending_to_false();
+        } else {
+            self.previous_board_state = Some(curr_board_state.clone());
+            draw_helper(curr_board_state, &self.canvas_size);
+        }
+    }
+}
+
+fn get_board_state(board: &Board) -> BoardState {
+    let num_cols = board.num_cols();
+    let visible_rows = board.visible_rows().to_vec();
+    let next_piece = board.next_piece().clone();
+    let score = board.score();
+    let ghost_cursor_positions = board.ghost_cursor_positions();
+    let num_hidden_rows = board.num_hidden_rows();
+    BoardState {
+        num_cols,
+        visible_rows,
+        next_piece,
+        score,
+        ghost_cursor_positions,
+        num_hidden_rows,
+    }
+}
+
+fn draw_helper(board_state: BoardState, canvas_size: &SizeInPixels) {
+    let num_board_cols = board_state.num_cols;
+    let visible_rows = board_state.visible_rows;
 
     let cell_size = calc_cell_size_in_pixels(canvas_size, num_board_cols, visible_rows.len());
 
-    draw_preview_of_next_piece(board.next_piece(), num_board_cols, cell_size);
+    draw_preview_of_next_piece(&board_state.next_piece, num_board_cols, cell_size);
 
-    draw_score(board.score(), num_board_cols, cell_size);
+    draw_score(board_state.score, num_board_cols, cell_size);
 
     for (y, row) in visible_rows.iter().enumerate() {
         for (x, cell) in row.iter().enumerate() {
@@ -33,14 +95,14 @@ pub fn draw(board: &Board, canvas_size: SizeInPixels) {
     }
 
     draw_ghost_cursor(
-        board.ghost_cursor_positions(),
-        board.num_hidden_rows(),
+        board_state.ghost_cursor_positions,
+        board_state.num_hidden_rows,
         cell_size,
     );
 }
 
 fn calc_cell_size_in_pixels(
-    canvas_size: SizeInPixels,
+    canvas_size: &SizeInPixels,
     num_board_cols: usize,
     num_visible_board_rows: usize,
 ) -> f32 {
@@ -119,7 +181,7 @@ fn draw_ghost_cursor(
 fn draw_ghost_cursor_cell(position: &Position, num_hidden_board_rows: usize, cell_size: f32) {
     let col_idx = position.x;
     let row_idx = position.y - num_hidden_board_rows as i32;
-    
+
     let outline_color = BEIGE;
     draw_rectangle_lines(
         col_idx as f32 * cell_size + LINE_THICKNESS / 4.0,
