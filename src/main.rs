@@ -5,13 +5,20 @@ mod tetromino_move;
 use action::to_tetromino_move;
 use action::Action;
 use board::Board;
-use macroquad::prelude::{get_keys_down, next_frame, KeyCode};
+use macroquad::color::colors::LIGHTGRAY;
+use macroquad::prelude::{
+    clear_background, get_keys_down, next_frame, request_new_screen_size, KeyCode,
+};
 use tetromino_move::TetrominoMove;
 
 use std::time::{Duration, Instant};
 
 const DEBOUNCE: Duration = Duration::from_millis(50);
 const ROTATION_DEBOUNCE: Duration = Duration::from_millis(150);
+const WINDOW_WIDTH: f32 = 500.0;
+const WINDOW_HEIGHT: f32 = 800.0;
+const BOARD_WIDTH: f32 = WINDOW_WIDTH - 80.0;
+const BOARD_HEIGHT: f32 = WINDOW_HEIGHT - 20.0;
 
 #[macroquad::main("Quads")]
 async fn main() {
@@ -19,9 +26,11 @@ async fn main() {
     let mut last_down_move_time = Instant::now();
     let mut opt_tetromino_move = None;
     let mut last_key_time = Instant::now();
-    let mut board = Board::new();
+    let mut board = Board::new(BOARD_WIDTH, BOARD_HEIGHT);
 
     loop {
+        request_new_screen_size(WINDOW_WIDTH, WINDOW_HEIGHT);
+        clear_background(LIGHTGRAY);
         let opt_user_action = get_user_action(&mut last_key_time);
 
         let now = Instant::now();

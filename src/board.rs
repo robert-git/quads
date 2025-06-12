@@ -8,9 +8,8 @@ use cursor::piece::Piece;
 use cursor::piece::Shape;
 use cursor::Cursor;
 use macroquad::color::colors::*;
-use macroquad::prelude::{
-    clear_background, draw_rectangle, draw_rectangle_lines, rand, request_new_screen_size,
-};
+use macroquad::color::Color;
+use macroquad::prelude::{draw_rectangle, draw_rectangle_lines, rand};
 use position::Position;
 
 type Row = Vec<Cell>;
@@ -19,23 +18,29 @@ pub struct Board {
     num_visible_rows: usize,
     num_total_rows: usize,
     num_cols: usize,
+    cell_size: f32,
     rows: Vec<Row>,
     cursor_start_position: Position,
     cursor: Cursor,
     next_shape_candidates: Vec<Shape>,
 }
 
-const CELL_SIZE: f32 = 40.0;
 const LINE_THICKNESS: f32 = 2.0;
 const NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS: usize = 4;
 type ToppedOut = bool;
 
 impl Board {
-    pub fn new() -> Self {
+    pub fn new(max_width: f32, max_height: f32) -> Self {
         rand::srand(macroquad::miniquad::date::now() as _);
         let num_visible_rows: usize = 20;
         let num_total_rows = num_visible_rows + NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS;
         let num_cols: usize = 10;
+
+        let cell_size_from_width = max_width / num_cols as f32;
+        let cell_size_from_height = max_height / num_visible_rows as f32;
+
+        let cell_size = cell_size_from_width.min(cell_size_from_height);
+
         let mut rows = vec![vec![Cell::new(); num_cols]; num_total_rows];
         let cursor_start_position = Position {
             x: (num_cols as i32 - 1) / 2,
@@ -59,6 +64,7 @@ impl Board {
             num_visible_rows,
             num_total_rows,
             num_cols,
+            cell_size,
             rows,
             cursor_start_position,
             cursor,
@@ -182,19 +188,12 @@ impl Board {
     }
 
     pub fn draw(&self) {
-        request_new_screen_size(
-            CELL_SIZE * self.num_cols as f32,
-            CELL_SIZE * self.num_visible_rows as f32,
-        );
-
-        clear_background(LIGHTGRAY);
-
         for (y, row) in self.rows[NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS..]
             .iter()
             .enumerate()
         {
             for (x, cell) in row.iter().enumerate() {
-                draw_cell(&cell.state, x, y);
+                draw_cell(&cell.state, x, y, self.cell_size);
             }
         }
     }
@@ -212,27 +211,35 @@ fn contains_any_stack_cell(row: &Row) -> bool {
     return row.iter().any(|&cell| cell.state == cell::State::Stack);
 }
 
-fn draw_cell(state: &cell::State, x: usize, y: usize) {
-    let color = match state {
-        cell::State::Empty => LIGHTGRAY,
+fn draw_cell(state: &cell::State, x: usize, y: usize, cell_size: f32) {
+    #[rustfmt::skip]
+    let outline_color = match state {
+        cell::State::Empty  => Color::new(0.99, 0.99, 0.99, 1.00),
+        cell::State::Cursor => BEIGE,
+        cell::State::Stack  => GRAY,
+    };
+
+    #[rustfmt::skip]
+    let fill_color = match state {
+        cell::State::Empty  => WHITE,
         cell::State::Cursor => BROWN,
-        cell::State::Stack => DARKGRAY,
+        cell::State::Stack  => DARKGRAY,
     };
 
     draw_rectangle_lines(
-        x as f32 * CELL_SIZE,
-        y as f32 * CELL_SIZE,
-        CELL_SIZE,
-        CELL_SIZE,
+        x as f32 * cell_size,
+        y as f32 * cell_size,
+        cell_size,
+        cell_size,
         LINE_THICKNESS,
-        GRAY,
+        outline_color,
     );
 
     draw_rectangle(
-        x as f32 * CELL_SIZE + LINE_THICKNESS / 2.,
-        y as f32 * CELL_SIZE + LINE_THICKNESS / 2.,
-        CELL_SIZE - LINE_THICKNESS,
-        CELL_SIZE - LINE_THICKNESS,
-        color,
+        x as f32 * cell_size + LINE_THICKNESS / 2.,
+        y as f32 * cell_size + LINE_THICKNESS / 2.,
+        cell_size - LINE_THICKNESS,
+        cell_size - LINE_THICKNESS,
+        fill_color,
     );
 }
