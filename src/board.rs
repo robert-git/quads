@@ -175,12 +175,23 @@ impl Board {
     }
 
     pub fn draw(&self) {
+        {
+            let preview_base_col: usize = self.num_cols + 3;
+            let preview_base_row: usize = 2;
+            draw_preview_piece(
+                self.cursor_queue.front().unwrap(),
+                preview_base_col,
+                preview_base_row,
+                self.cell_size,
+            );
+        }
+
         for (y, row) in self.rows[NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS..]
             .iter()
             .enumerate()
         {
             for (x, cell) in row.iter().enumerate() {
-                draw_cell(&cell.state, x, y, self.cell_size);
+                draw_cell(cell.state.clone(), x, y, self.cell_size);
             }
         }
     }
@@ -223,7 +234,15 @@ fn contains_any_stack_cell(row: &Row) -> bool {
     return row.iter().any(|&cell| cell.state == cell::State::Stack);
 }
 
-fn draw_cell(state: &cell::State, x: usize, y: usize, cell_size: f32) {
+fn draw_preview_piece(cursor: &Cursor, base_col_idx: usize, base_row_idx: usize, cell_size: f32) {
+    for &pos in cursor.piece.get_local_points().iter() {
+        let cell_col_idx = (base_col_idx as i32 + pos.x) as usize;
+        let cell_row_idx = (base_row_idx as i32 + pos.y) as usize;
+        draw_cell(cell::State::Cursor, cell_col_idx, cell_row_idx, cell_size);
+    }
+}
+
+fn draw_cell(state: cell::State, col_idx: usize, row_idx: usize, cell_size: f32) {
     #[rustfmt::skip]
     let outline_color = match state {
         cell::State::Empty  => Color::new(0.99, 0.99, 0.99, 1.00),
@@ -239,8 +258,8 @@ fn draw_cell(state: &cell::State, x: usize, y: usize, cell_size: f32) {
     };
 
     draw_rectangle_lines(
-        x as f32 * cell_size,
-        y as f32 * cell_size,
+        col_idx as f32 * cell_size,
+        row_idx as f32 * cell_size,
         cell_size,
         cell_size,
         LINE_THICKNESS,
@@ -248,8 +267,8 @@ fn draw_cell(state: &cell::State, x: usize, y: usize, cell_size: f32) {
     );
 
     draw_rectangle(
-        x as f32 * cell_size + LINE_THICKNESS / 2.,
-        y as f32 * cell_size + LINE_THICKNESS / 2.,
+        col_idx as f32 * cell_size + LINE_THICKNESS / 2.,
+        row_idx as f32 * cell_size + LINE_THICKNESS / 2.,
         cell_size - LINE_THICKNESS,
         cell_size - LINE_THICKNESS,
         fill_color,

@@ -15,7 +15,7 @@ use std::time::{Duration, Instant};
 
 const DEBOUNCE: Duration = Duration::from_millis(50);
 const ROTATION_DEBOUNCE: Duration = Duration::from_millis(150);
-const WINDOW_WIDTH: f32 = 500.0;
+const WINDOW_WIDTH: f32 = 640.0;
 const WINDOW_HEIGHT: f32 = 800.0;
 const BOARD_WIDTH: f32 = WINDOW_WIDTH - 80.0;
 const BOARD_HEIGHT: f32 = WINDOW_HEIGHT - 20.0;
