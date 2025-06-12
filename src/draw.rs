@@ -121,7 +121,7 @@ impl Renderer {
         print_row(&self.animation_row);
         draw_helper(
             &self.board_state.as_ref().unwrap(),
-            AnimatingRowRemoval::Yes,
+            DrawMode::AnimatingRowRemoval,
             &self.canvas_size,
             self.font_size,
         );
@@ -155,7 +155,7 @@ impl Renderer {
 
         draw_helper(
             &board_state,
-            AnimatingRowRemoval::No,
+            DrawMode::NotAnimatingRowRemoval,
             &self.canvas_size,
             self.font_size,
         );
@@ -219,21 +219,21 @@ fn is_full(row: &Row) -> bool {
     return row.iter().all(|&cell| cell.state == cell::State::Stack);
 }
 
-enum AnimatingRowRemoval {
-    No,
-    Yes,
+enum DrawMode {
+    NotAnimatingRowRemoval,
+    AnimatingRowRemoval,
 }
 
 fn draw_helper(
     board_state: &BoardState,
-    animating_row_removal: AnimatingRowRemoval,
+    draw_mode: DrawMode,
     canvas_size: &SizeInPixels,
     font_size: f32,
 ) {
     let num_board_cols = board_state.num_cols;
-    let visible_rows = match animating_row_removal {
-        AnimatingRowRemoval::No => &board_state.visible_rows,
-        AnimatingRowRemoval::Yes => &board_state.visible_rows_just_before_removal_of_full_rows,
+    let visible_rows = match draw_mode {
+        DrawMode::NotAnimatingRowRemoval => &board_state.visible_rows,
+        DrawMode::AnimatingRowRemoval => &board_state.visible_rows_just_before_removal_of_full_rows,
     };
 
     let cell_size = calc_cell_size_in_pixels(canvas_size, num_board_cols, visible_rows.len());
@@ -248,7 +248,7 @@ fn draw_helper(
         }
     }
 
-    if matches!(animating_row_removal, AnimatingRowRemoval::No) {
+    if matches!(draw_mode, DrawMode::NotAnimatingRowRemoval) {
         draw_ghost_cursor(
             board_state.ghost_cursor_positions.clone(),
             board_state.num_hidden_rows,
