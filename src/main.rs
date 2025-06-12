@@ -27,7 +27,7 @@ async fn main() {
     let auto_drop_interval = Duration::from_millis(2000);
     let mut last_down_move_time = Instant::now();
     let mut run = true;
-    let mut tetromino_move = TetrominoMove::Down;
+    let mut opt_tetromino_move = None;
 
     let mut last_key_time = Instant::now();
     let mut board = Board::new();
@@ -36,31 +36,34 @@ async fn main() {
         let opt_user_action = get_user_action(&mut last_key_time);
 
         let now = Instant::now();
-        if opt_user_action.is_some() {
-            let action = opt_user_action.unwrap();
-            // println!("action {:?}", action);
-            if action == Action::Quit {
-                run = false;
-            } else {
-                let opt_tetromino_move = to_tetromino_move(action);
-                if opt_tetromino_move.is_some() {
-                    tetromino_move = opt_tetromino_move.unwrap();
-                    if tetromino_move == TetrominoMove::Down {
-                        last_down_move_time = now;
+        if now - last_down_move_time > auto_drop_interval {
+            opt_tetromino_move = Some(TetrominoMove::Down);
+            last_down_move_time = now;
+            println!("Auto down");
+        } else {
+            if opt_user_action.is_some() {
+                let action = opt_user_action.unwrap();
+                // println!("action {:?}", action);
+                if action == Action::Quit {
+                    run = false;
+                } else {
+                    opt_tetromino_move = to_tetromino_move(action);
+                    if opt_tetromino_move.is_some() {
+                        let tetromino_move = opt_tetromino_move.unwrap();
+                        if tetromino_move == TetrominoMove::Down {
+                            last_down_move_time = now;
+                        }
+                        println!("tetromino_move {:?}", tetromino_move);
                     }
-                    println!("tetromino_move {:?}", tetromino_move);
                 }
             }
         }
-
-        if now - last_down_move_time > auto_drop_interval {
-            last_down_move_time = now;
-            println!("Auto down");
+        if opt_tetromino_move.is_some() {
+            board.update(opt_tetromino_move.unwrap());
         }
-
-        board.update(&tetromino_move);
         board.draw();
         next_frame().await;
+        opt_tetromino_move = None;
     }
     #[cfg(feature = "")]
     {
