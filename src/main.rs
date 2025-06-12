@@ -10,9 +10,8 @@ use macroquad::color::colors::LIGHTGRAY;
 use macroquad::prelude::{
     clear_background, get_keys_down, is_key_down, next_frame, request_new_screen_size, KeyCode,
 };
-use tetromino_move::TetrominoMove;
-
 use std::time::{Duration, Instant};
+use tetromino_move::TetrominoMove;
 
 const DEBOUNCE: Duration = Duration::from_millis(50);
 const ROTATION_DEBOUNCE: Duration = Duration::from_millis(150);
