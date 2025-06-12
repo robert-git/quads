@@ -8,7 +8,7 @@ use draw::Renderer;
 use macroquad::color::colors::LIGHTGRAY;
 use macroquad::prelude::{
     clear_background, get_keys_down, get_keys_pressed, is_key_down, next_frame,
-    request_new_screen_size, KeyCode,
+    request_new_screen_size, screen_height, screen_width, KeyCode,
 };
 use std::time::{Duration, Instant};
 use tetromino_move::TetrominoMove;
@@ -16,28 +16,22 @@ use user_action::to_tetromino_move;
 use user_action::UserAction;
 
 const INPUT_DEBOUNCE: Duration = Duration::from_millis(50);
-const WINDOW_WIDTH: f32 = 640.0;
-const WINDOW_HEIGHT: f32 = 800.0;
-const RIGHT_MARGIN_WIDTH: f32 = 80.0;
-const BOTTOM_MARGIN_HEIGHT: f32 = 20.0;
-const BOARD_WIDTH: f32 = WINDOW_WIDTH - RIGHT_MARGIN_WIDTH;
-const BOARD_HEIGHT: f32 = WINDOW_HEIGHT - BOTTOM_MARGIN_HEIGHT;
+const BASELINE_CANVAS_WIDTH: f32 = 640.0;
+const BASELINE_CANVAS_HEIGHT: f32 = 800.0;
 
 #[macroquad::main("Quads")]
 async fn main() {
+    let canvas_size = get_window_dims(BASELINE_CANVAS_WIDTH, BASELINE_CANVAS_HEIGHT);
     let mut gp = initialize_game();
 
-    let mut renderer = Renderer::new(draw::SizeInPixels {
-        width: BOARD_WIDTH,
-        height: BOARD_HEIGHT,
-    });
+    let mut renderer = Renderer::new(&canvas_size);
 
     loop {
         if gp.game_over {
-            draw::draw_game_over_screen(&gp.board);
+            renderer.draw_game_over_screen(&gp.board);
             reset_game_when_apt(&mut gp);
         } else {
-            request_new_screen_size(WINDOW_WIDTH, WINDOW_HEIGHT);
+            request_new_screen_size(canvas_size.width, canvas_size.height);
             clear_background(LIGHTGRAY);
 
             let opt_user_action = get_user_action(&mut gp.last_key_time);
@@ -78,6 +72,26 @@ async fn main() {
         }
 
         next_frame().await;
+    }
+}
+
+fn get_window_dims(requested_width: f32, requested_height: f32) -> draw::SizeInPixels {
+    let aspect_ratio = requested_width / requested_height;
+    let max_possible_width = screen_width().min(requested_width);
+    let max_possible_height = screen_height().min(requested_height);
+    let size_based_on_max_possible_height = draw::SizeInPixels {
+        width: max_possible_height * aspect_ratio,
+        height: max_possible_height,
+    };
+    let size_based_on_max_possible_width = draw::SizeInPixels {
+        width: max_possible_width,
+        height: max_possible_width / aspect_ratio,
+    };
+
+    if size_based_on_max_possible_height.height < size_based_on_max_possible_width.height {
+        return size_based_on_max_possible_height;
+    } else {
+        return size_based_on_max_possible_width;
     }
 }
 

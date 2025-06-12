@@ -31,13 +31,17 @@ struct BoardState {
 
 pub struct Renderer {
     canvas_size: SizeInPixels,
+    font_size: f32,
     previous_board_state: Option<BoardState>,
 }
 
 impl Renderer {
-    pub fn new(canvas_size: SizeInPixels) -> Self {
+    pub fn new(canvas_size: &SizeInPixels) -> Self {
+        let original_canvas_height = 800.0;
+        let original_font_size = 30.0;
         Renderer {
-            canvas_size,
+            canvas_size: canvas_size.clone(),
+            font_size: original_font_size * (canvas_size.height / original_canvas_height),
             previous_board_state: None,
         }
     }
@@ -49,6 +53,7 @@ impl Renderer {
                 draw_helper(
                     self.previous_board_state.clone().unwrap(),
                     &self.canvas_size,
+                    self.font_size,
                 );
                 thread::sleep(std::time::Duration::from_millis(100));
                 next_frame();
@@ -56,7 +61,7 @@ impl Renderer {
             board.set_row_removal_animation_is_pending_to_false();
         } else {
             self.previous_board_state = Some(curr_board_state.clone());
-            draw_helper(curr_board_state, &self.canvas_size);
+            draw_helper(curr_board_state, &self.canvas_size, self.font_size);
         }
     }
 }
@@ -78,7 +83,7 @@ fn get_board_state(board: &Board) -> BoardState {
     }
 }
 
-fn draw_helper(board_state: BoardState, canvas_size: &SizeInPixels) {
+fn draw_helper(board_state: BoardState, canvas_size: &SizeInPixels, font_size: f32) {
     let num_board_cols = board_state.num_cols;
     let visible_rows = board_state.visible_rows;
 
@@ -86,7 +91,7 @@ fn draw_helper(board_state: BoardState, canvas_size: &SizeInPixels) {
 
     draw_preview_of_next_piece(&board_state.next_piece, num_board_cols, cell_size);
 
-    draw_score(board_state.score, num_board_cols, cell_size);
+    draw_score(board_state.score, num_board_cols, cell_size, font_size);
 
     for (y, row) in visible_rows.iter().enumerate() {
         for (x, cell) in row.iter().enumerate() {
@@ -111,8 +116,7 @@ fn calc_cell_size_in_pixels(
     cell_size_from_width.min(cell_size_from_height)
 }
 
-fn draw_score(score: i32, num_board_cols: usize, cell_size: f32) {
-    let font_size = 30.;
+fn draw_score(score: i32, num_board_cols: usize, cell_size: f32, font_size: f32) {
     let spacer_cols_x = 2;
     let pixel_offset_x = (num_board_cols + spacer_cols_x) as f32 * cell_size;
     let pixel_offset_y = 40.0;
@@ -193,34 +197,37 @@ fn draw_ghost_cursor_cell(position: &Position, num_hidden_board_rows: usize, cel
     );
 }
 
-pub fn draw_game_over_screen(board: &Board) {
-    clear_background(WHITE);
+impl Renderer {
+    pub fn draw_game_over_screen(&self, board: &Board) {
+        clear_background(WHITE);
 
-    let font_size = 30.0;
+        let font_size = self.font_size;
 
-    let y_base = screen_height() / 2.0;
-    let final_score = board.score();
-    let lines = vec![
-        String::from("Game Over. Press [enter] to play again."),
-        format!("Final score: {final_score}"),
-        String::from("(High Score:)"),
-    ];
+        let y_base = screen_height() / 2.0;
+        let final_score = board.score();
+        let lines = vec![
+            String::from("Game Over. Press [enter] to play again."),
+            format!("Final score: {final_score}"),
+            String::from("(High Score:)"),
+        ];
 
-    let opt_tallest_line = lines.iter().max_by_key(|line| {
-        let dimensions = measure_text(line, None, font_size as _, 1.0);
-        dimensions.height as i32
-    });
-    let size_of_tallest_line = measure_text(opt_tallest_line.unwrap(), None, font_size as _, 1.0);
-    let line_spacing = size_of_tallest_line.height * 1.5;
+        let opt_tallest_line = lines.iter().max_by_key(|line| {
+            let dimensions = measure_text(line, None, font_size as _, 1.0);
+            dimensions.height as i32
+        });
+        let size_of_tallest_line =
+            measure_text(opt_tallest_line.unwrap(), None, font_size as _, 1.0);
+        let line_spacing = size_of_tallest_line.height * 1.5;
 
-    for (i, text) in lines.iter().enumerate() {
-        let text_size = measure_text(text, None, font_size as _, 1.0);
-        draw_text(
-            text,
-            screen_width() / 2. - text_size.width / 2.,
-            y_base + (i as f32 * line_spacing) + line_spacing / 2.,
-            font_size,
-            DARKGRAY,
-        );
+        for (i, text) in lines.iter().enumerate() {
+            let text_size = measure_text(text, None, font_size as _, 1.0);
+            draw_text(
+                text,
+                screen_width() / 2. - text_size.width / 2.,
+                y_base + (i as f32 * line_spacing) + line_spacing / 2.,
+                font_size,
+                DARKGRAY,
+            );
+        }
     }
 }
