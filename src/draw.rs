@@ -37,10 +37,10 @@ fn calc_cell_size_in_pixels(
     cell_size_from_width.min(cell_size_from_height)
 }
 
-fn draw_preview_of_next_piece(piece: &Piece, num_board_cols: usize, cell_size: f32) {
+fn draw_preview_of_next_piece(next_piece: &Piece, num_board_cols: usize, cell_size: f32) {
     let base_col_idx: usize = num_board_cols + 3;
     let base_row_idx: usize = 2;
-    for &pos in piece.get_local_points().iter() {
+    for &pos in next_piece.get_local_points().iter() {
         let cell_col_idx = (base_col_idx as i32 + pos.x) as usize;
         let cell_row_idx = (base_row_idx as i32 + pos.y) as usize;
         draw_cell(cell::State::Cursor, cell_col_idx, cell_row_idx, cell_size);
