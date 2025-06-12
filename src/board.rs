@@ -2,7 +2,9 @@ mod cell;
 mod cursor;
 mod position;
 
+use super::tetromino_move::TetrominoMove;
 use cell::Cell;
+use cursor::piece::Piece;
 use cursor::Cursor;
 use macroquad::color::colors::*;
 use macroquad::prelude::{
@@ -34,11 +36,9 @@ impl Board {
         };
         let cursor = Cursor {
             position: cursor_start_position,
+            piece: Piece::new(),
         };
-        Self::set_state(
-            &mut rows[cursor.position.y as usize][cursor.position.x as usize],
-            cell::State::Cursor,
-        );
+        Self::set_state_of_cell_at_cursor(&cursor, &mut rows, cell::State::Cursor);
         Board {
             num_rows,
             num_cols,
@@ -48,9 +48,9 @@ impl Board {
         }
     }
 
-    fn set_cursor_state(&mut self, cursor: &Cursor, state: cell::State) {
+    fn set_state_of_cell_at_cursor(cursor: &Cursor, rows: &mut Vec<Row>, state: cell::State) {
         Self::set_state(
-            &mut self.rows[cursor.position.y as usize][cursor.position.x as usize],
+            &mut rows[cursor.position.y as usize][cursor.position.x as usize],
             state,
         );
     }
@@ -59,16 +59,59 @@ impl Board {
         cell.state = state;
     }
 
-    pub fn update(&mut self, tetromino_move: crate::tetromino_move::TetrominoMove) {
-        use crate::tetromino_move::TetrominoMove;
+    pub fn update(&mut self, tetromino_move: TetrominoMove) {
+        let new_cursor = Self::calc_new_cursor_pos_and_orientation(&self.cursor, tetromino_move);
 
-        match tetromino_move {
-            TetrominoMove::Down  => self.try_move_cursor_down(),
-            TetrominoMove::Left  => self.try_move_cursor_left(),
-            TetrominoMove::Right => self.try_move_cursor_right(),
-            TetrominoMove::RotateCW => (),
-            TetrominoMove::RotateCCW => (),
+        if self.fits_on_board(&new_cursor) {
+            self.set_cursor_state(cell::State::Empty);
+            self.cursor = new_cursor;
+            self.set_cursor_state(cell::State::Cursor);
+        } else {
+            if tetromino_move == TetrominoMove::Down {
+                //DockCurrentPieceToStack();
+                //RemoveFullRowsFromStack();
+                //DropNewPiece();
+            }
         }
+        /*
+                match tetromino_move {
+                    TetrominoMove::Down => self.try_move_cursor_down(),
+                    TetrominoMove::Left => self.try_move_cursor_left(),
+                    TetrominoMove::Right => self.try_move_cursor_right(),
+                    TetrominoMove::RotateCW => (),
+                    TetrominoMove::RotateCCW => (),
+                }
+        */
+    }
+
+    #[rustfmt::skip]
+    fn calc_new_cursor_pos_and_orientation(curr: &Cursor, tetromino_move: TetrominoMove) -> Cursor {
+        let curr_pos = curr.position;
+        let cur_x = curr_pos.x;
+        let cur_y = curr_pos.y;
+        match tetromino_move {
+            TetrominoMove::Down  => return Cursor::from(curr, Position {x: cur_x    , y: cur_y + 1}),
+            TetrominoMove::Left  => return Cursor::from(curr, Position {x: cur_x - 1, y: cur_y}),
+            TetrominoMove::Right => return Cursor::from(curr, Position {x: cur_x + 1, y: cur_y}),
+            TetrominoMove::RotateCW => return curr.clone(),
+            TetrominoMove::RotateCCW => return curr.clone(),
+        }
+    }
+
+    fn fits_on_board(&self, cursor: &Cursor) -> bool {
+        let points = cursor.get_points();
+        if self.any_is_out_of_bounds(&points) {
+            return false;
+        }
+        return self.all_not_occupied_by_stack(&points);
+    }
+
+    fn any_is_out_of_bounds(&self, positions: &Vec<Position>) -> bool {
+        return false;
+    }
+
+    fn all_not_occupied_by_stack(&self, positions: &Vec<Position>) -> bool {
+        return true;
     }
 
     fn try_move_cursor_down(&mut self) {
@@ -102,17 +145,13 @@ impl Board {
     where
         UpdateCursorPosition: Fn(&mut Self),
     {
-        {
-            let mut cell =
-                &mut self.rows[self.cursor.position.y as usize][self.cursor.position.x as usize];
-            Self::set_state(&mut cell, cell::State::Empty);
-        }
-
+        self.set_cursor_state(cell::State::Empty);
         update_cursor_pos(self);
+        self.set_cursor_state(cell::State::Cursor);
+    }
 
-        let mut cell =
-            &mut self.rows[self.cursor.position.y as usize][self.cursor.position.x as usize];
-        Self::set_state(&mut cell, cell::State::Cursor);
+    fn set_cursor_state(&mut self, state: cell::State) {
+        Self::set_state_of_cell_at_cursor(&self.cursor, &mut self.rows, state);
     }
 
     pub fn draw(&self) {
