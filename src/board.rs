@@ -98,9 +98,9 @@ impl Board {
         });
     }
 
-    fn move_cursor<UpdateCursorPosition>(&mut self, mut update_cursor_pos: UpdateCursorPosition)
+    fn move_cursor<UpdateCursorPosition>(&mut self, update_cursor_pos: UpdateCursorPosition)
     where
-        UpdateCursorPosition: FnMut(&mut Self),
+        UpdateCursorPosition: Fn(&mut Self),
     {
         {
             let mut cell =
