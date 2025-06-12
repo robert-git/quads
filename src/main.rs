@@ -1,7 +1,9 @@
+mod action;
 mod piece_move;
 
 use macroquad::prelude::*;
 use piece_move::PieceMove;
+use action::Action;
 
 use std::collections::LinkedList;
 use std::time::{Duration, Instant};
@@ -15,16 +17,6 @@ struct Snake {
     head: Point,
     body: LinkedList<Point>,
     dir: Point,
-}
-
-#[derive(Debug, PartialEq, Copy, Clone)]
-enum Action {
-    Down,
-    Left,
-    Right,
-    RotateCW,
-    RotateCCW,
-    Quit,
 }
 
 fn to_piece_move(action: Action) -> Option<PieceMove> {
