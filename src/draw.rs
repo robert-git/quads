@@ -21,8 +21,8 @@ pub fn draw(board: &Board, canvas_size: SizeInPixels) {
     {
         let preview_base_col: usize = num_cols + 3;
         let preview_base_row: usize = 2;
-        draw_preview_piece(
-            board.upcoming_piece(),
+        draw_preview_of_next_piece(
+            board.next_piece(),
             preview_base_col,
             preview_base_row,
             cell_size,
@@ -36,7 +36,7 @@ pub fn draw(board: &Board, canvas_size: SizeInPixels) {
     }
 }
 
-fn draw_preview_piece(piece: &Piece, base_col_idx: usize, base_row_idx: usize, cell_size: f32) {
+fn draw_preview_of_next_piece(piece: &Piece, base_col_idx: usize, base_row_idx: usize, cell_size: f32) {
     for &pos in piece.get_local_points().iter() {
         let cell_col_idx = (base_col_idx as i32 + pos.x) as usize;
         let cell_row_idx = (base_row_idx as i32 + pos.y) as usize;

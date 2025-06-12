@@ -173,7 +173,7 @@ impl Board {
         &self.rows[NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS..]
     }
 
-    pub fn upcoming_piece(&self) -> &cursor::piece::Piece {
+    pub fn next_piece(&self) -> &cursor::piece::Piece {
         &self.cursor_queue.front().unwrap().piece
     }
 }
