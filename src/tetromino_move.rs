@@ -1,5 +1,5 @@
 #[derive(Debug, PartialEq)]
-pub enum PieceMove {
+pub enum TetrominoMove {
     Down,
     Left,
     Right,

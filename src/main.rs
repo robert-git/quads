@@ -1,10 +1,10 @@
 mod action;
-mod piece_move;
+mod tetromino_move;
 
 use macroquad::prelude::*;
-use piece_move::PieceMove;
+use tetromino_move::TetrominoMove;
 use action::Action;
-use action::to_piece_move;
+use action::to_tetromino_move;
 
 use std::collections::LinkedList;
 use std::time::{Duration, Instant};
@@ -25,7 +25,7 @@ async fn main() {
     let auto_drop_interval = Duration::from_millis(2000);
     let mut last_down_move_time = Instant::now();
     let mut run = true;
-    let mut piece_move = PieceMove::Down;
+    let mut tetromino_move = TetrominoMove::Down;
 
     let mut last_key_time = Instant::now();
 
@@ -39,13 +39,13 @@ async fn main() {
             if action == Action::Quit {
                 run = false;
             } else {
-                let opt_piece_move = to_piece_move(action);
-                if opt_piece_move.is_some() {
-                    piece_move = opt_piece_move.unwrap();
-                    if piece_move == PieceMove::Down {
+                let opt_tetromino_move = to_tetromino_move(action);
+                if opt_tetromino_move.is_some() {
+                    tetromino_move = opt_tetromino_move.unwrap();
+                    if tetromino_move == TetrominoMove::Down {
                         last_down_move_time = now;
                     }
-                    println!("piece_move {:?}", piece_move);
+                    println!("tetromino_move {:?}", tetromino_move);
                 }
             }
         }

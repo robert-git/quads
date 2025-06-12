@@ -1,4 +1,4 @@
-use crate::piece_move::PieceMove;
+use crate::tetromino_move::TetrominoMove;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum Action {
@@ -10,13 +10,13 @@ pub enum Action {
     Quit,
 }
 
-pub fn to_piece_move(action: Action) -> Option<PieceMove> {
+pub fn to_tetromino_move(action: Action) -> Option<TetrominoMove> {
     match action {
-        Action::Down      => Some(PieceMove::Down),
-        Action::Left      => Some(PieceMove::Left),
-        Action::Right     => Some(PieceMove::Right),
-        Action::RotateCW  => Some(PieceMove::RotateCW),
-        Action::RotateCCW => Some(PieceMove::RotateCCW),
+        Action::Down      => Some(TetrominoMove::Down),
+        Action::Left      => Some(TetrominoMove::Left),
+        Action::Right     => Some(TetrominoMove::Right),
+        Action::RotateCW  => Some(TetrominoMove::RotateCW),
+        Action::RotateCCW => Some(TetrominoMove::RotateCCW),
         _                 => None,
     }
 }
