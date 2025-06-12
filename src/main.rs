@@ -46,7 +46,10 @@ async fn main() {
             }
         }
         if opt_tetromino_move.is_some() {
-            board.update(opt_tetromino_move.unwrap());
+            let topped_out = board.update(opt_tetromino_move.unwrap());
+            if topped_out {
+                break;
+            }
         }
         board.draw();
         next_frame().await;

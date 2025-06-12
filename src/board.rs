@@ -16,7 +16,8 @@ use position::Position;
 type Row = Vec<Cell>;
 
 pub struct Board {
-    num_rows: usize,
+    num_visible_rows: usize,
+    num_total_rows: usize,
     num_cols: usize,
     rows: Vec<Row>,
     cursor_start_position: Position,
@@ -24,15 +25,18 @@ pub struct Board {
     next_shape_candidates: Vec<Shape>,
 }
 
-const CELL_SIZE: f32 = 40.;
-const LINE_THICKNESS: f32 = 2.;
+const CELL_SIZE: f32 = 40.0;
+const LINE_THICKNESS: f32 = 2.0;
+const NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS: usize = 4;
+type ToppedOut = bool;
 
 impl Board {
     pub fn new() -> Self {
         rand::srand(macroquad::miniquad::date::now() as _);
+        let num_visible_rows: usize = 20;
+        let num_total_rows = num_visible_rows + NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS;
         let num_cols: usize = 10;
-        let num_rows: usize = 20;
-        let mut rows = vec![vec![Cell::new(); num_cols]; num_rows];
+        let mut rows = vec![vec![Cell::new(); num_cols]; num_total_rows];
         let cursor_start_position = Position {
             x: (num_cols as i32 - 1) / 2,
             y: 0,
@@ -52,7 +56,8 @@ impl Board {
             Shape::L,
         ];
         Board {
-            num_rows,
+            num_visible_rows,
+            num_total_rows,
             num_cols,
             rows,
             cursor_start_position,
@@ -71,7 +76,10 @@ impl Board {
         cell.state = state;
     }
 
-    pub fn update(&mut self, tetromino_move: TetrominoMove) {
+    #[must_use]
+    pub fn update(&mut self, tetromino_move: TetrominoMove) -> ToppedOut {
+        let mut topped_out: ToppedOut = false;
+
         let new_cursor = Self::calc_new_cursor_pos_and_orientation(&self.cursor, tetromino_move);
 
         if self.fits_on_board(&new_cursor) {
@@ -82,9 +90,11 @@ impl Board {
             if tetromino_move == TetrominoMove::Down {
                 self.dock_cursor_to_stack();
                 self.remove_full_rows_from_stack();
+                topped_out = self.stack_height() >= self.num_visible_rows;
                 self.drop_new_piece();
             }
         }
+        topped_out
     }
 
     #[rustfmt::skip]
@@ -114,7 +124,7 @@ impl Board {
     }
 
     fn is_out_of_bounds(&self, pos: &Position) -> bool {
-        let (w, h) = (self.num_cols as i32, self.num_rows as i32);
+        let (w, h) = (self.num_cols as i32, self.num_total_rows as i32);
         return pos.x < 0 || pos.x >= w || pos.y < 0 || pos.y >= h;
     }
 
@@ -144,6 +154,19 @@ impl Board {
         self.rows.splice(0..0, new_rows);
     }
 
+    fn stack_height(&self) -> usize {
+        let opt_index_highest_stack_row = self
+            .rows
+            .iter()
+            .position(|row| contains_any_stack_cell(&row));
+
+        if opt_index_highest_stack_row.is_some() {
+            self.num_total_rows - opt_index_highest_stack_row.unwrap()
+        } else {
+            0
+        }
+    }
+
     fn drop_new_piece(&mut self) {
         let shape =
             self.next_shape_candidates[rand::gen_range(0, self.next_shape_candidates.len())];
@@ -161,12 +184,15 @@ impl Board {
     pub fn draw(&self) {
         request_new_screen_size(
             CELL_SIZE * self.num_cols as f32,
-            CELL_SIZE * self.num_rows as f32,
+            CELL_SIZE * self.num_visible_rows as f32,
         );
 
         clear_background(LIGHTGRAY);
 
-        for (y, row) in self.rows.iter().enumerate() {
+        for (y, row) in self.rows[NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS..]
+            .iter()
+            .enumerate()
+        {
             for (x, cell) in row.iter().enumerate() {
                 draw_cell(&cell.state, x, y);
             }
@@ -180,6 +206,10 @@ fn is_not_a_full_row(row: &Row) -> bool {
 
 fn is_a_full_row(row: &Row) -> bool {
     return row.iter().all(|&cell| cell.state == cell::State::Stack);
+}
+
+fn contains_any_stack_cell(row: &Row) -> bool {
+    return row.iter().any(|&cell| cell.state == cell::State::Stack);
 }
 
 fn draw_cell(state: &cell::State, x: usize, y: usize) {
