@@ -114,6 +114,7 @@ impl Board {
             &mut self.rows[self.cursor.position.y as usize][self.cursor.position.x as usize];
         Self::set_state(&mut cell, cell::State::Cursor);
     }
+
     pub fn draw(&self) {
         request_new_screen_size(
             CELL_SIZE * self.num_cols as f32,
