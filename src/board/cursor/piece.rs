@@ -153,6 +153,11 @@ fn rotate_90_deg(piece: &Piece, dir: RotationDir) -> Piece {
 
     swap_xs_and_ys(&mut float_points_centered_at_origin);
 
+    // The coordinate origin of the board is the upper left corner, such that
+    // positive x is to the right and positive y is down.
+    // Therefore after swapping x and y, to rotate clockwise, negate the xs.
+    // If the coordinate plane were instead a normal Cartesian plane where positive y is
+    // upwards, then clockwise rotation would instead require negating the ys.
     match dir {
         RotationDir::Clockwise        => negate_xs(&mut float_points_centered_at_origin),
         RotationDir::Counterclockwise => negate_ys(&mut float_points_centered_at_origin),
