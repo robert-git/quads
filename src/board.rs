@@ -120,7 +120,9 @@ impl Board {
             CELL_SIZE * self.num_cols as f32,
             CELL_SIZE * self.num_rows as f32,
         );
+
         clear_background(LIGHTGRAY);
+
         for (y, row) in self.rows.iter().enumerate() {
             for (x, cell) in row.iter().enumerate() {
                 draw_cell(&cell.state, x, y);
@@ -144,6 +146,7 @@ fn draw_cell(state: &cell::State, x: usize, y: usize) {
         LINE_THICKNESS,
         GRAY,
     );
+
     draw_rectangle(
         x as f32 * CELL_SIZE + LINE_THICKNESS / 2.,
         y as f32 * CELL_SIZE + LINE_THICKNESS / 2.,
