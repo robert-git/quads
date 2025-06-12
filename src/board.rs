@@ -143,10 +143,10 @@ fn draw_cell(state: &cell::State, x: usize, y: usize) {
         GRAY,
     );
     draw_rectangle(
-        x as f32 * CELL_SIZE + LINE_THICKNESS,
-        y as f32 * CELL_SIZE + LINE_THICKNESS,
-        CELL_SIZE - 2 as f32 * LINE_THICKNESS,
-        CELL_SIZE - 2 as f32 * LINE_THICKNESS,
+        x as f32 * CELL_SIZE + LINE_THICKNESS / 2.,
+        y as f32 * CELL_SIZE + LINE_THICKNESS / 2.,
+        CELL_SIZE - LINE_THICKNESS,
+        CELL_SIZE - LINE_THICKNESS,
         color,
     );
 }
