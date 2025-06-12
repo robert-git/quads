@@ -174,8 +174,7 @@ impl Board {
     }
 
     fn drop_new_piece(&mut self) {
-        let shape =
-            self.next_shape_candidates[rand::gen_range(0, self.next_shape_candidates.len())];
+        let shape = random_shape(&self.next_shape_candidates);
         self.cursor = Cursor {
             position: self.cursor_start_position.clone(),
             piece: Piece::new(shape),
@@ -197,6 +196,10 @@ impl Board {
             }
         }
     }
+}
+
+fn random_shape(shape_list: &Vec<Shape>) -> Shape {
+    shape_list[rand::gen_range(0, shape_list.len())]
 }
 
 fn is_not_a_full_row(row: &Row) -> bool {
