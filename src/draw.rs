@@ -62,7 +62,7 @@ impl Renderer {
         let board_state = get_board_state(&board);
         let num_cols = board_state.num_cols;
         let num_frames_to_animate = num_cols as i32 / 2;
-        let sleep_between_animated_frames = || thread::sleep(std::time::Duration::from_millis(80));
+        let sleep_between_animated_frames = || thread::sleep(std::time::Duration::from_millis(60));
 
         if board.row_removal_animation_is_pending() && self.drawing_row_removal_animation == false {
             self.board_state = Some(board_state.clone());
