@@ -293,9 +293,9 @@ fn draw_helper(
 fn make_next_frame_of_row_removal_animation(
     rows: &mut Vec<DisplayRow>,
     indices_of_full_rows_to_animate: &Vec<usize>,
-    mut animation_row: &mut DisplayRow,
+    animation_row: &mut DisplayRow,
 ) {
-    enlarge_middle_gap(&mut animation_row);
+    enlarge_middle_gap(animation_row);
 
     print_rows(&rows, "Before replacement");
     for &index in indices_of_full_rows_to_animate {
