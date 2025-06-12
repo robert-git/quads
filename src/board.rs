@@ -122,15 +122,7 @@ impl Board {
     }
 
     fn dock_cursor_to_stack(&mut self) {
-        self.cursor
-            .get_point_positions()
-            .iter()
-            .for_each(|position| {
-                set_state(
-                    &mut self.rows[position.y as usize][position.x as usize],
-                    cell::State::Stack,
-                )
-            });
+        self.set_cell_states_at_cursor(cell::State::Stack);
     }
 
     fn remove_full_rows_from_stack(&mut self) {
