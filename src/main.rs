@@ -5,7 +5,7 @@ mod tetromino_move;
 use action::to_tetromino_move;
 use action::Action;
 use board::Board;
-use macroquad::prelude::{KeyCode, get_keys_down, next_frame};
+use macroquad::prelude::{get_keys_down, next_frame, KeyCode};
 use tetromino_move::TetrominoMove;
 
 use std::time::{Duration, Instant};
@@ -33,7 +33,6 @@ async fn main() {
         } else {
             if opt_user_action.is_some() {
                 let action = opt_user_action.unwrap();
-                // println!("action {:?}", action);
                 if action == Action::Quit {
                     run = false;
                 } else {
