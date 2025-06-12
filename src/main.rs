@@ -17,8 +17,10 @@ const INPUT_DEBOUNCE: Duration = Duration::from_millis(50);
 const ROTATION_DEBOUNCE: Duration = Duration::from_millis(150);
 const WINDOW_WIDTH: f32 = 640.0;
 const WINDOW_HEIGHT: f32 = 800.0;
-const BOARD_WIDTH: f32 = WINDOW_WIDTH - 80.0;
-const BOARD_HEIGHT: f32 = WINDOW_HEIGHT - 20.0;
+const RIGHT_MARGIN_WIDTH: f32 = 80.0;
+const BOTTOM_MARGIN_HEIGHT: f32 = 20.0;
+const BOARD_WIDTH: f32 = WINDOW_WIDTH - RIGHT_MARGIN_WIDTH;
+const BOARD_HEIGHT: f32 = WINDOW_HEIGHT - BOTTOM_MARGIN_HEIGHT;
 
 #[macroquad::main("Quads")]
 async fn main() {
