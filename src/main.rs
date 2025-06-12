@@ -1,4 +1,7 @@
+mod piece_move;
+
 use macroquad::prelude::*;
+use piece_move::PieceMove;
 
 use std::collections::LinkedList;
 use std::time::{Duration, Instant};
@@ -22,15 +25,6 @@ enum Action {
     RotateCW,
     RotateCCW,
     Quit,
-}
-
-#[derive(Debug, PartialEq)]
-enum PieceMove {
-    Down,
-    Left,
-    Right,
-    RotateCW,
-    RotateCCW,
 }
 
 fn to_piece_move(action: Action) -> Option<PieceMove> {
@@ -250,11 +244,10 @@ fn get_user_action(last_key_time: &mut Instant) -> Option<Action> {
     }
 
     let keys_down = get_keys_down();
-    
+
     for key in keys_down {
         let opt_action = to_action(key);
-        if opt_action.is_some()
-        {
+        if opt_action.is_some() {
             *last_key_time = now;
         }
         return opt_action;
@@ -263,7 +256,7 @@ fn get_user_action(last_key_time: &mut Instant) -> Option<Action> {
     None
 }
 
-fn to_action( key: KeyCode) -> Option<Action>{
+fn to_action(key: KeyCode) -> Option<Action> {
     match key {
         KeyCode::Down  => Some(Action::Down),
         KeyCode::Left  => Some(Action::Left),
