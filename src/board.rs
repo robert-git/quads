@@ -62,9 +62,9 @@ impl Board {
         let new_cursor = Self::calc_new_cursor_pos_and_orientation(&self.cursor, tetromino_move);
 
         if self.fits_on_board(&new_cursor) {
-            self.set_cursor_state(cell::State::Empty);
+            self.set_cell_states_at_cursor(cell::State::Empty);
             self.cursor = new_cursor;
-            self.set_cursor_state(cell::State::Cursor);
+            self.set_cell_states_at_cursor(cell::State::Cursor);
         } else {
             if tetromino_move == TetrominoMove::Down {
                 //DockCurrentPieceToStack();
@@ -109,7 +109,7 @@ impl Board {
         return true;
     }
 
-    fn set_cursor_state(&mut self, state: cell::State) {
+    fn set_cell_states_at_cursor(&mut self, state: cell::State) {
         Self::set_state_of_cells_at_cursor(&self.cursor, &mut self.rows, state);
     }
 
