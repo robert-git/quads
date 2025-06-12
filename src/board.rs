@@ -81,34 +81,61 @@ impl Board {
     pub fn update(&mut self, tetromino_move: TetrominoMove) -> ToppedOut {
         let mut topped_out: ToppedOut = false;
 
-        let new_cursor = calc_new_cursor_pos_and_orientation(&self.cursor, tetromino_move);
+        let hard_drop_y = self.calc_hard_drop_y(&self.cursor);
+
+        let new_cursor =
+            calc_new_cursor_pos_and_orientation(&self.cursor, tetromino_move, hard_drop_y);
 
         if self.fits_on_board(&new_cursor) {
             self.set_cell_states_at_cursor(cell::State::Empty);
             self.cursor = new_cursor;
             self.set_cell_states_at_cursor(cell::State::Cursor);
-            if tetromino_move == TetrominoMove::UserDown {
-                self.score += 1;
+            match tetromino_move {
+                TetrominoMove::UserSoftDown => self.score += 1,
+                TetrominoMove::UserHardDown => {
+                    self.score += 12;
+                    topped_out = self.run_docking_sequence();
+                }
+                _ => (),
             }
-        } else {
-            if tetromino_move == TetrominoMove::AutoDown
-                || tetromino_move == TetrominoMove::UserDown
-            {
-                self.dock_cursor_to_stack();
-                self.remove_full_rows_from_stack();
-                topped_out = self.stack_height() >= self.num_visible_rows;
-                self.drop_new_piece();
-            }
+        } else if tetromino_move == TetrominoMove::AutoDown
+            || tetromino_move == TetrominoMove::UserSoftDown
+        {
+            topped_out = self.run_docking_sequence();
         }
+
+        topped_out
+    }
+
+    fn calc_hard_drop_y(&self, cursor: &Cursor) -> i32 {
+        let mut hard_drop_y = cursor.position.y;
+        let mut point_positions = cursor.get_point_positions();
+
+        while self.cursor_cells_fit_on_board(&point_positions) {
+            increment_ys(&mut point_positions);
+            hard_drop_y += 1;
+        }
+        hard_drop_y - 1
+    }
+
+    fn run_docking_sequence(&mut self) -> ToppedOut {
+        self.dock_cursor_to_stack();
+        self.remove_full_rows_from_stack();
+        let topped_out = self.stack_height() >= self.num_visible_rows;
+        self.drop_new_piece();
         topped_out
     }
 
     fn fits_on_board(&self, cursor: &Cursor) -> bool {
         let point_positions = cursor.get_point_positions();
-        if self.any_is_out_of_bounds(&point_positions) {
+        return self.cursor_cells_fit_on_board(&point_positions);
+    }
+
+    fn cursor_cells_fit_on_board(&self, cursor_cell_positions: &Vec<Position>) -> bool {
+        if self.any_is_out_of_bounds(&cursor_cell_positions) {
             return false;
         }
-        return self.all_not_occupied_by_stack(&point_positions);
+        return self.all_not_occupied_by_stack(&cursor_cell_positions);
     }
 
     fn any_is_out_of_bounds(&self, positions: &Vec<Position>) -> bool {
@@ -183,14 +210,21 @@ impl Board {
     }
 }
 
+fn increment_ys(positions: &mut Vec<Position>) {
+    positions.iter_mut().for_each(|pos| pos.y += 1);
+}
+
 #[rustfmt::skip]
-fn calc_new_cursor_pos_and_orientation(curr: &Cursor, tetromino_move: TetrominoMove) -> Cursor {
+fn calc_new_cursor_pos_and_orientation(curr: &Cursor, tetromino_move: TetrominoMove, hard_drop_y: i32) -> Cursor {
     let curr_pos = curr.position;
     let cur_x = curr_pos.x;
     let cur_y = curr_pos.y;
     match tetromino_move {
-        TetrominoMove::AutoDown | TetrominoMove::UserDown => {
+        TetrominoMove::AutoDown | TetrominoMove::UserSoftDown => {
             return curr.offset_copy(Position {x: cur_x, y: cur_y + 1,})
+        }
+        TetrominoMove::UserHardDown => {
+            return curr.offset_copy(Position {x: cur_x, y: hard_drop_y,})
         }
         TetrominoMove::Left => {
             return curr.offset_copy(Position {x: cur_x - 1, y: cur_y,})

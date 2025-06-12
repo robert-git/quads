@@ -1,20 +1,20 @@
-mod user_action;
 mod board;
 mod draw;
 mod tetromino_move;
+mod user_action;
 
-use user_action::to_tetromino_move;
-use user_action::UserAction;
 use board::Board;
 use macroquad::color::colors::LIGHTGRAY;
 use macroquad::prelude::{
-    clear_background, get_keys_down, is_key_down, next_frame, request_new_screen_size, KeyCode,
+    clear_background, get_keys_down, get_keys_pressed, is_key_down, next_frame,
+    request_new_screen_size, KeyCode,
 };
 use std::time::{Duration, Instant};
 use tetromino_move::TetrominoMove;
+use user_action::to_tetromino_move;
+use user_action::UserAction;
 
 const INPUT_DEBOUNCE: Duration = Duration::from_millis(50);
-const ROTATION_DEBOUNCE: Duration = Duration::from_millis(150);
 const WINDOW_WIDTH: f32 = 640.0;
 const WINDOW_HEIGHT: f32 = 800.0;
 const RIGHT_MARGIN_WIDTH: f32 = 80.0;
@@ -49,7 +49,7 @@ async fn main() {
                         gp.opt_tetromino_move = to_tetromino_move(action);
                         if gp.opt_tetromino_move.is_some() {
                             let tetromino_move = gp.opt_tetromino_move.unwrap();
-                            if tetromino_move == TetrominoMove::UserDown {
+                            if tetromino_move == TetrominoMove::UserSoftDown {
                                 gp.last_down_move_time = now;
                             }
                             println!("tetromino_move {:?}", tetromino_move);
@@ -115,31 +115,50 @@ fn get_user_action(last_key_time: &mut Instant) -> Option<UserAction> {
         return None;
     }
 
-    let keys_down = get_keys_down();
+    {
+        // Auto-repeat keys:
+        let keys_down = get_keys_down();
 
-    for key in keys_down {
-        let opt_action = to_action(key);
-        if opt_action.is_some() {
-            let action = opt_action.unwrap();
-            if action == UserAction::RotateCW || action == UserAction::RotateCCW {
-                if now - *last_key_time < ROTATION_DEBOUNCE {
-                    return None;
-                }
+        for key in keys_down {
+            let opt_action = autorepeat_key_to_action(key);
+            if opt_action.is_some() {
+                *last_key_time = now;
+                return opt_action;
             }
-            *last_key_time = now;
         }
-        return opt_action;
+    }
+
+    {
+        // Non-auto-repeat (single-shot) keys:
+        let keys_pressed = get_keys_pressed();
+
+        for key in keys_pressed {
+            let opt_action = non_autorepeat_key_to_action(key);
+            if opt_action.is_some() {
+                println!("action = {:?}", opt_action.unwrap());
+                *last_key_time = now;
+                return opt_action;
+            }
+        }
     }
 
     None
 }
 
 #[rustfmt::skip]
-fn to_action(key: KeyCode) -> Option<UserAction> {
+fn autorepeat_key_to_action(key: KeyCode) -> Option<UserAction> {
     match key {
-        KeyCode::Down  => Some(UserAction::Down),
+        KeyCode::Down  => Some(UserAction::SoftDrop),
         KeyCode::Left  => Some(UserAction::Left),
         KeyCode::Right => Some(UserAction::Right),
+        _              => None,
+    }
+}
+
+#[rustfmt::skip]
+fn non_autorepeat_key_to_action(key: KeyCode) -> Option<UserAction> {
+    match key {
+        KeyCode::Space => Some(UserAction::HardDrop),
         KeyCode::Up    => Some(UserAction::RotateCW),
         KeyCode::Slash => Some(UserAction::RotateCCW),
         KeyCode::Q     => Some(UserAction::Quit),

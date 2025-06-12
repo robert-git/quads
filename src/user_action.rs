@@ -2,7 +2,8 @@ use crate::tetromino_move::TetrominoMove;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum UserAction {
-    Down,
+    SoftDrop,
+    HardDrop,
     Left,
     Right,
     RotateCW,
@@ -13,7 +14,8 @@ pub enum UserAction {
 #[rustfmt::skip]
 pub fn to_tetromino_move(action: UserAction) -> Option<TetrominoMove> {
     match action {
-        UserAction::Down      => Some(TetrominoMove::UserDown),
+        UserAction::SoftDrop  => Some(TetrominoMove::UserSoftDown),
+        UserAction::HardDrop  => Some(TetrominoMove::UserHardDown),
         UserAction::Left      => Some(TetrominoMove::Left),
         UserAction::Right     => Some(TetrominoMove::Right),
         UserAction::RotateCW  => Some(TetrominoMove::RotateCW),
