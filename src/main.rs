@@ -13,7 +13,7 @@ use macroquad::prelude::{
 use std::time::{Duration, Instant};
 use tetromino_move::TetrominoMove;
 
-const DEBOUNCE: Duration = Duration::from_millis(50);
+const INPUT_DEBOUNCE: Duration = Duration::from_millis(50);
 const ROTATION_DEBOUNCE: Duration = Duration::from_millis(150);
 const WINDOW_WIDTH: f32 = 640.0;
 const WINDOW_HEIGHT: f32 = 800.0;
@@ -109,7 +109,7 @@ fn reset_game_when_apt(gp: &mut GameParams) {
 
 fn get_user_action(last_key_time: &mut Instant) -> Option<Action> {
     let now = Instant::now();
-    if now - *last_key_time < DEBOUNCE {
+    if now - *last_key_time < INPUT_DEBOUNCE {
         return None;
     }
 
