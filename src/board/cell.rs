@@ -5,7 +5,7 @@ pub enum State {
     Stack,
 }
 
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub struct Cell {
     pub state: State,
 }
