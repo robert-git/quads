@@ -27,48 +27,53 @@ async fn main() {
     let mut renderer = Renderer::new(&canvas_size);
 
     loop {
-        if gp.game_over {
-            renderer.draw_game_over_screen(&gp.board);
-            reset_game_when_apt(&mut gp);
-        } else {
-            request_new_screen_size(canvas_size.width, canvas_size.height);
+        if renderer.drawing_row_removal_animation() {
             clear_background(LIGHTGRAY);
-
-            let opt_user_action = get_user_action(&mut gp.last_key_time);
-
-            let now = Instant::now();
-            if now - gp.last_down_move_time > gp.auto_drop_interval {
-                gp.opt_tetromino_move = Some(TetrominoMove::AutoDown);
-                gp.last_down_move_time = now;
-                println!("Auto down");
+            renderer.draw(&mut gp.board);
+        } else {
+            if gp.game_over {
+                renderer.draw_game_over_screen(&gp.board);
+                reset_game_when_apt(&mut gp);
             } else {
-                if opt_user_action.is_some() {
-                    let action = opt_user_action.unwrap();
-                    if action == UserAction::Quit {
-                        gp.game_over = true;
-                    } else {
-                        gp.opt_tetromino_move = to_tetromino_move(action);
-                        if gp.opt_tetromino_move.is_some() {
-                            let tetromino_move = gp.opt_tetromino_move.unwrap();
-                            if tetromino_move == TetrominoMove::UserSoftDown {
-                                gp.last_down_move_time = now;
+                request_new_screen_size(canvas_size.width, canvas_size.height);
+                clear_background(LIGHTGRAY);
+
+                let opt_user_action = get_user_action(&mut gp.last_key_time);
+
+                let now = Instant::now();
+                if now - gp.last_down_move_time > gp.auto_drop_interval {
+                    gp.opt_tetromino_move = Some(TetrominoMove::AutoDown);
+                    gp.last_down_move_time = now;
+                    println!("Auto down");
+                } else {
+                    if opt_user_action.is_some() {
+                        let action = opt_user_action.unwrap();
+                        if action == UserAction::Quit {
+                            gp.game_over = true;
+                        } else {
+                            gp.opt_tetromino_move = to_tetromino_move(action);
+                            if gp.opt_tetromino_move.is_some() {
+                                let tetromino_move = gp.opt_tetromino_move.unwrap();
+                                if tetromino_move == TetrominoMove::UserSoftDown {
+                                    gp.last_down_move_time = now;
+                                }
+                                println!("tetromino_move {:?}", tetromino_move);
                             }
-                            println!("tetromino_move {:?}", tetromino_move);
                         }
                     }
                 }
-            }
 
-            if gp.opt_tetromino_move.is_some() {
-                let topped_out = gp.board.update(gp.opt_tetromino_move.unwrap());
-                if topped_out {
-                    gp.game_over = true;
+                if gp.opt_tetromino_move.is_some() {
+                    let topped_out = gp.board.update(gp.opt_tetromino_move.unwrap());
+                    if topped_out {
+                        gp.game_over = true;
+                    }
                 }
+
+                renderer.draw(&mut gp.board);
+
+                gp.opt_tetromino_move = None;
             }
-
-            renderer.draw(&mut gp.board);
-
-            gp.opt_tetromino_move = None;
         }
 
         next_frame().await;

@@ -23,6 +23,7 @@ pub struct Board {
     next_shape_candidates: Vec<Shape>,
     score: i32,
     row_removal_animation_is_pending: bool,
+    rows_just_before_removal_of_full_rows: Vec<Row>,
 }
 
 const NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS: usize = 4;
@@ -65,6 +66,8 @@ impl Board {
         let cursor = cursor_queue.pop_front().unwrap();
         set_state_of_cells_at_cursor(&cursor, &mut rows, cell::State::Cursor);
 
+        let rows_just_before_removal_of_full_rows = rows.clone();
+
         Board {
             num_visible_rows,
             num_total_rows,
@@ -76,6 +79,7 @@ impl Board {
             next_shape_candidates,
             score: 0,
             row_removal_animation_is_pending: false,
+            rows_just_before_removal_of_full_rows,
         }
     }
 
@@ -122,6 +126,7 @@ impl Board {
 
     fn run_docking_sequence(&mut self) -> ToppedOut {
         self.dock_cursor_to_stack();
+        self.rows_just_before_removal_of_full_rows = self.rows.clone();
         self.remove_full_rows_from_stack();
         let topped_out = self.stack_height() >= self.num_visible_rows;
         self.drop_new_piece();
@@ -204,6 +209,10 @@ impl Board {
 
     pub fn visible_rows(&self) -> &[Row] {
         &self.rows[NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS..]
+    }
+
+    pub fn visible_rows_just_before_removal_of_full_rows(&self) -> &[Row] {
+        &self.rows_just_before_removal_of_full_rows[NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS..]
     }
 
     pub fn num_hidden_rows(&self) -> usize {

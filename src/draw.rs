@@ -6,8 +6,8 @@ use super::board::Board;
 use macroquad::color::colors::*;
 use macroquad::color::Color;
 use macroquad::prelude::{
-    clear_background, draw_rectangle, draw_rectangle_lines, draw_text, measure_text, next_frame,
-    screen_height, screen_width,
+    clear_background, draw_rectangle, draw_rectangle_lines, draw_text, measure_text, screen_height,
+    screen_width,
 };
 use std::thread;
 
@@ -23,6 +23,7 @@ pub struct SizeInPixels {
 struct BoardState {
     num_cols: usize,
     visible_rows: Vec<super::board::Row>,
+    visible_rows_just_before_removal_of_full_rows: Vec<super::board::Row>,
     next_piece: cursor::piece::Piece,
     score: i32,
     ghost_cursor_positions: Vec<Position>,
@@ -32,7 +33,8 @@ struct BoardState {
 pub struct Renderer {
     canvas_size: SizeInPixels,
     font_size: f32,
-    previous_board_state: Option<BoardState>,
+    drawing_row_removal_animation: bool,
+    animation_frames_left_to_draw: i32,
 }
 
 impl Renderer {
@@ -42,33 +44,77 @@ impl Renderer {
         Renderer {
             canvas_size: canvas_size.clone(),
             font_size: original_font_size * (canvas_size.height / original_canvas_height),
-            previous_board_state: None,
+            drawing_row_removal_animation: false,
+            animation_frames_left_to_draw: 0,
         }
     }
 
     pub fn draw(&mut self, board: &mut Board) {
-        let curr_board_state = get_board_state(&board);
-        if board.row_removal_animation_is_pending() {
-            for _ in 0..10 {
-                draw_helper(
-                    self.previous_board_state.clone().unwrap(),
-                    &self.canvas_size,
-                    self.font_size,
-                );
-                thread::sleep(std::time::Duration::from_millis(100));
-                next_frame();
-            }
-            board.set_row_removal_animation_is_pending_to_false();
+        let board_state = get_board_state(&board);
+
+        if board.row_removal_animation_is_pending() && self.drawing_row_removal_animation == false {
+            self.drawing_row_removal_animation = true;
+            self.animation_frames_left_to_draw = 10;
+        }
+
+        if self.animation_frames_left_to_draw > 0 {
+            self.animation_frames_left_to_draw -= 1;
+            print_rows(
+                &board_state.visible_rows_just_before_removal_of_full_rows,
+                "Renderer before",
+            );
+            print_rows(&board_state.visible_rows, "Renderer after");
+
+            draw_helper(
+                &board_state,
+                WhichStateToDraw::JustBeforeRemovalOfFullRows,
+                &self.canvas_size,
+                self.font_size,
+            );
+            thread::sleep(std::time::Duration::from_millis(100));
         } else {
-            self.previous_board_state = Some(curr_board_state.clone());
-            draw_helper(curr_board_state, &self.canvas_size, self.font_size);
+            board.set_row_removal_animation_is_pending_to_false();
+            self.drawing_row_removal_animation = false;
+            draw_helper(
+                &board_state,
+                WhichStateToDraw::Current,
+                &self.canvas_size,
+                self.font_size,
+            );
         }
     }
+
+    pub fn drawing_row_removal_animation(&self) -> bool {
+        self.drawing_row_removal_animation
+    }
+}
+
+fn print_rows(rows: &Vec<super::board::Row>, desc: &str) {
+    println!("{desc}:");
+    for row in rows.iter() {
+        print!("|");
+        for cell in row.iter() {
+            print_cell(&cell);
+        }
+        println!("|");
+    }
+}
+
+fn print_cell(cell: &cell::Cell) {
+    let ch = match cell.state {
+        cell::State::Empty => " ",
+        cell::State::Cursor => "*",
+        cell::State::Stack => "x",
+    };
+    print!("{ch}");
 }
 
 fn get_board_state(board: &Board) -> BoardState {
     let num_cols = board.num_cols();
     let visible_rows = board.visible_rows().to_vec();
+    let visible_rows_just_before_removal_of_full_rows = board
+        .visible_rows_just_before_removal_of_full_rows()
+        .to_vec();
     let next_piece = board.next_piece().clone();
     let score = board.score();
     let ghost_cursor_positions = board.ghost_cursor_positions();
@@ -76,6 +122,7 @@ fn get_board_state(board: &Board) -> BoardState {
     BoardState {
         num_cols,
         visible_rows,
+        visible_rows_just_before_removal_of_full_rows,
         next_piece,
         score,
         ghost_cursor_positions,
@@ -83,9 +130,24 @@ fn get_board_state(board: &Board) -> BoardState {
     }
 }
 
-fn draw_helper(board_state: BoardState, canvas_size: &SizeInPixels, font_size: f32) {
+enum WhichStateToDraw {
+    Current,
+    JustBeforeRemovalOfFullRows,
+}
+
+fn draw_helper(
+    board_state: &BoardState,
+    which_to_draw: WhichStateToDraw,
+    canvas_size: &SizeInPixels,
+    font_size: f32,
+) {
     let num_board_cols = board_state.num_cols;
-    let visible_rows = board_state.visible_rows;
+    let visible_rows = match which_to_draw {
+        WhichStateToDraw::Current => &board_state.visible_rows,
+        WhichStateToDraw::JustBeforeRemovalOfFullRows => {
+            &board_state.visible_rows_just_before_removal_of_full_rows
+        }
+    };
 
     let cell_size = calc_cell_size_in_pixels(canvas_size, num_board_cols, visible_rows.len());
 
@@ -99,11 +161,13 @@ fn draw_helper(board_state: BoardState, canvas_size: &SizeInPixels, font_size: f
         }
     }
 
-    draw_ghost_cursor(
-        board_state.ghost_cursor_positions,
-        board_state.num_hidden_rows,
-        cell_size,
-    );
+    if matches!(which_to_draw, WhichStateToDraw::Current) {
+        draw_ghost_cursor(
+            board_state.ghost_cursor_positions.clone(),
+            board_state.num_hidden_rows,
+            cell_size,
+        );
+    }
 }
 
 fn calc_cell_size_in_pixels(
