@@ -5,10 +5,11 @@ mod position;
 use super::tetromino_move::TetrominoMove;
 use cell::Cell;
 use cursor::piece::Piece;
+use cursor::piece::Shape;
 use cursor::Cursor;
 use macroquad::color::colors::*;
 use macroquad::prelude::{
-    clear_background, draw_rectangle, draw_rectangle_lines, request_new_screen_size,
+    clear_background, draw_rectangle, draw_rectangle_lines, rand, request_new_screen_size,
 };
 use position::Position;
 
@@ -20,6 +21,7 @@ pub struct Board {
     rows: Vec<Row>,
     cursor_start_position: Position,
     cursor: Cursor,
+    next_shape_candidates: Vec<Shape>,
 }
 
 const CELL_SIZE: f32 = 40.;
@@ -36,15 +38,25 @@ impl Board {
         };
         let cursor = Cursor {
             position: cursor_start_position,
-            piece: Piece::new(),
+            piece: Piece::new(Shape::O),
         };
         Self::set_state_of_cells_at_cursor(&cursor, &mut rows, cell::State::Cursor);
+        let next_shape_candidates = vec![
+            Shape::O,
+            Shape::I,
+            Shape::T,
+            Shape::S,
+            Shape::Z,
+            Shape::J,
+            Shape::L,
+        ];
         Board {
             num_rows,
             num_cols,
             rows,
             cursor_start_position,
             cursor,
+            next_shape_candidates,
         }
     }
 
@@ -67,9 +79,9 @@ impl Board {
             self.set_cell_states_at_cursor(cell::State::Cursor);
         } else {
             if tetromino_move == TetrominoMove::Down {
-                //DockCurrentPieceToStack();
+                self.dock_cursor_to_stack();
                 //RemoveFullRowsFromStack();
-                //DropNewPiece();
+                self.drop_new_piece();
             }
         }
     }
@@ -109,6 +121,27 @@ impl Board {
         return positions
             .iter()
             .all(|&pos| self.rows[pos.y as usize][pos.x as usize].state != cell::State::Stack);
+    }
+
+    fn dock_cursor_to_stack(&mut self) {
+        self.cursor
+            .get_point_positions()
+            .iter()
+            .for_each(|position| {
+                Self::set_state(
+                    &mut self.rows[position.y as usize][position.x as usize],
+                    cell::State::Stack,
+                )
+            });
+    }
+
+    fn drop_new_piece(&mut self) {
+        let shape = self.next_shape_candidates[rand::gen_range(0, self.next_shape_candidates.len())];
+        self.cursor = Cursor {
+            position: self.cursor_start_position.clone(),
+            piece: Piece::new(shape),
+        };
+        self.set_cell_states_at_cursor(cell::State::Cursor);
     }
 
     fn set_cell_states_at_cursor(&mut self, state: cell::State) {

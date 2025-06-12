@@ -1,7 +1,7 @@
 use super::Position;
 
 #[derive(Copy, Clone)]
-enum Shape {
+pub enum Shape {
     O,
     I,
     T,
@@ -111,8 +111,7 @@ pub struct Piece {
 }
 
 impl Piece {
-    pub fn new() -> Self {
-        let shape = Shape::O;
+    pub fn new(shape: Shape) -> Self {
         let (local_rotation_origin, local_point_positions) =
             shape.get_rotation_origin_and_initial_point_positions();
         Piece {
