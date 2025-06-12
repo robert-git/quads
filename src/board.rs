@@ -34,6 +34,7 @@ type ToppedOut = bool;
 type NumRowsClearedThisUpdate = usize;
 
 impl Board {
+    // Construction
     pub fn new() -> Self {
         rand::srand(macroquad::miniquad::date::now() as _);
         let num_visible_rows: usize = 20;
@@ -87,7 +88,9 @@ impl Board {
             rows_just_before_removal_of_full_rows,
         }
     }
+}
 
+impl Board {
     #[must_use]
     pub fn update(
         &mut self,
@@ -245,7 +248,10 @@ impl Board {
     pub fn next_piece(&self) -> &cursor::piece::Piece {
         &self.cursor_queue.front().unwrap().piece
     }
+}
 
+impl Board {
+    // Scoring
     fn increment_score_by(&mut self, increment_amount: i32) {
         self.score += increment_amount;
         self.high_score = self.score.max(self.high_score);
