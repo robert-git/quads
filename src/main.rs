@@ -16,13 +16,11 @@ const DEBOUNCE: Duration = Duration::from_millis(50);
 async fn main() {
     let auto_drop_interval = Duration::from_millis(2000);
     let mut last_down_move_time = Instant::now();
-    let mut run = true;
     let mut opt_tetromino_move = None;
-
     let mut last_key_time = Instant::now();
     let mut board = Board::new();
 
-    while run {
+    loop {
         let opt_user_action = get_user_action(&mut last_key_time);
 
         let now = Instant::now();
@@ -34,16 +32,15 @@ async fn main() {
             if opt_user_action.is_some() {
                 let action = opt_user_action.unwrap();
                 if action == Action::Quit {
-                    run = false;
-                } else {
-                    opt_tetromino_move = to_tetromino_move(action);
-                    if opt_tetromino_move.is_some() {
-                        let tetromino_move = opt_tetromino_move.unwrap();
-                        if tetromino_move == TetrominoMove::Down {
-                            last_down_move_time = now;
-                        }
-                        println!("tetromino_move {:?}", tetromino_move);
+                    break;
+                }
+                opt_tetromino_move = to_tetromino_move(action);
+                if opt_tetromino_move.is_some() {
+                    let tetromino_move = opt_tetromino_move.unwrap();
+                    if tetromino_move == TetrominoMove::Down {
+                        last_down_move_time = now;
                     }
+                    println!("tetromino_move {:?}", tetromino_move);
                 }
             }
         }
