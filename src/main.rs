@@ -1,6 +1,5 @@
 use macroquad::prelude::*;
 
-use std::collections::HashMap;
 use std::collections::LinkedList;
 use std::time::{Duration, Instant};
 
@@ -41,11 +40,9 @@ fn to_piece_move(action: Action) -> Option<PieceMove> {
         Action::Right     => Some(PieceMove::Right),
         Action::RotateCW  => Some(PieceMove::RotateCW),
         Action::RotateCCW => Some(PieceMove::RotateCCW),
-        _ => None,
+        _                 => None,
     }
 }
-
-type KeyToActionMap = HashMap<KeyCode, Action>;
 
 #[macroquad::main("Quads")]
 async fn main() {
@@ -54,20 +51,10 @@ async fn main() {
     let mut run = true;
     let mut piece_move = PieceMove::Down;
 
-    #[rustfmt::skip]
-    let key_to_action: KeyToActionMap = HashMap::from([
-        (KeyCode::Down , Action::Down),
-        (KeyCode::Left , Action::Left),
-        (KeyCode::Right, Action::Right),
-        (KeyCode::Up   , Action::RotateCW),
-        (KeyCode::Slash, Action::RotateCCW),
-        (KeyCode::Q    , Action::Quit),
-    ]);
-
     let mut last_key_time = Instant::now();
 
     while run {
-        let opt_user_action = get_user_action(&mut last_key_time, &key_to_action);
+        let opt_user_action = get_user_action(&mut last_key_time);
 
         let now = Instant::now();
         if opt_user_action.is_some() {
@@ -256,23 +243,34 @@ fn get_key_press_or_timeout() -> Option<char> {
     get_char_pressed()
 }
 
-fn get_user_action(last_key_time: &mut Instant, key_to_action: &KeyToActionMap) -> Option<Action> {
+fn get_user_action(last_key_time: &mut Instant) -> Option<Action> {
     let now = Instant::now();
     if now - *last_key_time < DEBOUNCE {
         return None;
     }
 
     let keys_down = get_keys_down();
-
+    
     for key in keys_down {
-        match key_to_action.get(&key) {
-            Some(action) => {
-                *last_key_time = now;
-                return Some(*action);
-            }
-            _ => return None,
+        let opt_action = to_action(key);
+        if opt_action.is_some()
+        {
+            *last_key_time = now;
         }
+        return opt_action;
     }
 
     None
+}
+
+fn to_action( key: KeyCode) -> Option<Action>{
+    match key {
+        KeyCode::Down  => Some(Action::Down),
+        KeyCode::Left  => Some(Action::Left),
+        KeyCode::Right => Some(Action::Right),
+        KeyCode::Up    => Some(Action::RotateCW),
+        KeyCode::Slash => Some(Action::RotateCCW),
+        KeyCode::Q     => Some(Action::Quit),
+        _              => None,
+    }
 }
