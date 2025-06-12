@@ -1,7 +1,9 @@
 pub mod piece;
 
 use super::position::Position;
+use macroquad::prelude::rand;
 use piece::Piece;
+use piece::Shape;
 
 #[derive(Clone)]
 pub struct Cursor {
@@ -10,6 +12,13 @@ pub struct Cursor {
 }
 
 impl Cursor {
+    pub fn random_shape(position: Position, shape_list: &Vec<Shape>) -> Cursor {
+        Cursor {
+            position,
+            piece: Piece::new(random_shape(&shape_list)),
+        }
+    }
+
     pub fn offset_copy(&self, new_position: Position) -> Cursor {
         Cursor {
             position: new_position,
@@ -35,6 +44,10 @@ impl Cursor {
         let local_points = self.piece.get_local_points().clone();
         return offset_points_by_position(local_points, &self.position);
     }
+}
+
+fn random_shape(shape_list: &Vec<Shape>) -> Shape {
+    shape_list[rand::gen_range(0, shape_list.len())]
 }
 
 fn offset_points_by_position(mut points: Vec<Position>, pos: &Position) -> Vec<Position> {

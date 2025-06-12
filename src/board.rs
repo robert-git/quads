@@ -4,13 +4,13 @@ mod position;
 
 use super::tetromino_move::TetrominoMove;
 use cell::Cell;
-use cursor::piece::Piece;
 use cursor::piece::Shape;
 use cursor::Cursor;
 use macroquad::color::colors::*;
 use macroquad::color::Color;
 use macroquad::prelude::{draw_rectangle, draw_rectangle_lines, rand};
 use position::Position;
+use std::collections::VecDeque;
 
 type Row = Vec<Cell>;
 
@@ -21,6 +21,7 @@ pub struct Board {
     cell_size: f32,
     rows: Vec<Row>,
     cursor_start_position: Position,
+    cursor_queue: VecDeque<Cursor>,
     cursor: Cursor,
     next_shape_candidates: Vec<Shape>,
 }
@@ -56,10 +57,18 @@ impl Board {
             x: (num_cols as i32 - 1) / 2,
             y: 0,
         };
-        let cursor = Cursor {
-            position: cursor_start_position,
-            piece: Piece::new(random_shape(&next_shape_candidates)),
-        };
+
+        let mut cursor_queue = VecDeque::new();
+        cursor_queue.push_back(Cursor::random_shape(
+            cursor_start_position.clone(),
+            &next_shape_candidates,
+        ));
+        cursor_queue.push_back(Cursor::random_shape(
+            cursor_start_position.clone(),
+            &next_shape_candidates,
+        ));
+
+        let cursor = cursor_queue.pop_front().unwrap();
         set_state_of_cells_at_cursor(&cursor, &mut rows, cell::State::Cursor);
 
         Board {
@@ -70,6 +79,7 @@ impl Board {
             rows,
             cursor_start_position,
             cursor,
+            cursor_queue,
             next_shape_candidates,
         }
     }
@@ -152,11 +162,11 @@ impl Board {
     }
 
     fn drop_new_piece(&mut self) {
-        let shape = random_shape(&self.next_shape_candidates);
-        self.cursor = Cursor {
-            position: self.cursor_start_position.clone(),
-            piece: Piece::new(shape),
-        };
+        self.cursor_queue.push_back(Cursor::random_shape(
+            self.cursor_start_position.clone(),
+            &self.next_shape_candidates,
+        ));
+        self.cursor = self.cursor_queue.pop_front().unwrap();
         self.set_cell_states_at_cursor(cell::State::Cursor);
     }
 
@@ -174,10 +184,6 @@ impl Board {
             }
         }
     }
-}
-
-fn random_shape(shape_list: &Vec<Shape>) -> Shape {
-    shape_list[rand::gen_range(0, shape_list.len())]
 }
 
 #[rustfmt::skip]
