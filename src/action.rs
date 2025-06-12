@@ -10,6 +10,7 @@ pub enum Action {
     Quit,
 }
 
+#[rustfmt::skip]
 pub fn to_tetromino_move(action: Action) -> Option<TetrominoMove> {
     match action {
         Action::Down      => Some(TetrominoMove::Down),

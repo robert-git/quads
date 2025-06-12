@@ -1,12 +1,12 @@
 mod action;
+pub mod board;
 mod tetromino_move;
-mod board;
 
+use action::to_tetromino_move;
+use action::Action;
+use board::Board;
 use macroquad::prelude::*;
 use tetromino_move::TetrominoMove;
-use action::Action;
-use action::to_tetromino_move;
-use board::Board;
 
 use std::collections::LinkedList;
 use std::time::{Duration, Instant};
@@ -58,7 +58,8 @@ async fn main() {
             println!("Auto down");
         }
 
-        board.update( &tetromino_move );
+        board.update(&tetromino_move);
+        board.draw();
         next_frame().await;
     }
     #[cfg(feature = "")]
@@ -242,6 +243,7 @@ fn get_user_action(last_key_time: &mut Instant) -> Option<Action> {
     None
 }
 
+#[rustfmt::skip]
 fn to_action(key: KeyCode) -> Option<Action> {
     match key {
         KeyCode::Down  => Some(Action::Down),
