@@ -1,5 +1,6 @@
 use super::board::cell;
 use super::board::cursor::piece::Piece;
+use super::board::position::Position;
 use super::board::Board;
 use macroquad::color::colors::*;
 use macroquad::color::Color;
@@ -30,6 +31,12 @@ pub fn draw(board: &Board, canvas_size: SizeInPixels) {
             draw_cell(cell.state.clone(), x, y, cell_size);
         }
     }
+
+    draw_ghost_cursor(
+        board.ghost_cursor_positions(),
+        board.num_hidden_rows(),
+        cell_size,
+    );
 }
 
 fn calc_cell_size_in_pixels(
@@ -96,6 +103,31 @@ fn draw_cell(state: cell::State, col_idx: usize, row_idx: usize, cell_size: f32)
         cell_size - LINE_THICKNESS,
         cell_size - LINE_THICKNESS,
         fill_color,
+    );
+}
+
+fn draw_ghost_cursor(
+    ghost_cursor_cell_positions: Vec<Position>,
+    num_hidden_board_rows: usize,
+    cell_size: f32,
+) {
+    ghost_cursor_cell_positions
+        .iter()
+        .for_each(|pos| draw_ghost_cursor_cell(pos, num_hidden_board_rows, cell_size));
+}
+
+fn draw_ghost_cursor_cell(position: &Position, num_hidden_board_rows: usize, cell_size: f32) {
+    let outline_color = BEIGE;
+    let col_idx = position.x;
+    let row_idx = position.y - num_hidden_board_rows as i32;
+
+    draw_rectangle_lines(
+        col_idx as f32 * cell_size,
+        row_idx as f32 * cell_size,
+        cell_size,
+        cell_size,
+        LINE_THICKNESS,
+        outline_color,
     );
 }
 

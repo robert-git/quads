@@ -1,6 +1,6 @@
 pub mod cell;
 pub mod cursor;
-mod position;
+pub mod position;
 
 use super::tetromino_move::TetrominoMove;
 use cell::Cell;
@@ -199,6 +199,19 @@ impl Board {
 
     pub fn visible_rows(&self) -> &[Row] {
         &self.rows[NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS..]
+    }
+
+    pub fn num_hidden_rows(&self) -> usize {
+        self.num_total_rows - self.num_visible_rows
+    }
+
+    pub fn ghost_cursor_positions(&self) -> Vec<Position> {
+        let hard_drop_y = self.calc_hard_drop_y(&self.cursor);
+        let ghost_cursor = self.cursor.offset_copy(Position {
+            x: self.cursor.position.x,
+            y: hard_drop_y,
+        });
+        ghost_cursor.get_point_positions()
     }
 
     pub fn next_piece(&self) -> &cursor::piece::Piece {
