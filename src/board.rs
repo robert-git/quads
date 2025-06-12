@@ -106,7 +106,9 @@ impl Board {
     }
 
     fn all_not_occupied_by_stack(&self, positions: &Vec<Position>) -> bool {
-        return true;
+        return positions
+            .iter()
+            .all(|&pos| self.rows[pos.y as usize][pos.x as usize].state != cell::State::Stack);
     }
 
     fn set_cell_states_at_cursor(&mut self, state: cell::State) {
