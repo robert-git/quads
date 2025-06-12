@@ -29,6 +29,7 @@ const LINE_THICKNESS: f32 = 2.;
 
 impl Board {
     pub fn new() -> Self {
+        rand::srand(macroquad::miniquad::date::now() as _);
         let num_cols: i32 = 10;
         let num_rows: i32 = 20;
         let mut rows = vec![vec![Cell::new(); num_cols as usize]; num_rows as usize];
