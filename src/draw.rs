@@ -161,5 +161,4 @@ pub fn draw_game_over_screen(board: &Board) {
             DARKGRAY,
         );
     }
-    println!("---");
 }
