@@ -3,6 +3,7 @@ use super::board::cursor;
 use super::board::cursor::piece::Piece;
 use super::board::position::Position;
 use super::board::Board;
+use super::board::Row;
 use macroquad::color::colors::*;
 use macroquad::color::Color;
 use macroquad::prelude::{
@@ -22,8 +23,8 @@ pub struct SizeInPixels {
 #[derive(Clone)]
 struct BoardState {
     num_cols: usize,
-    visible_rows: Vec<super::board::Row>,
-    visible_rows_just_before_removal_of_full_rows: Vec<super::board::Row>,
+    visible_rows: Vec<Row>,
+    visible_rows_just_before_removal_of_full_rows: Vec<Row>,
     next_piece: cursor::piece::Piece,
     score: i32,
     ghost_cursor_positions: Vec<Position>,
@@ -35,6 +36,10 @@ pub struct Renderer {
     font_size: f32,
     drawing_row_removal_animation: bool,
     animation_frames_left_to_draw: i32,
+    indices_of_full_rows_to_animate: Vec<usize>,
+    animation_row: Row,
+    board_state: Option<BoardState>,
+    first_frame_post_animation: bool,
 }
 
 impl Renderer {
@@ -46,35 +51,70 @@ impl Renderer {
             font_size: original_font_size * (canvas_size.height / original_canvas_height),
             drawing_row_removal_animation: false,
             animation_frames_left_to_draw: 0,
+            indices_of_full_rows_to_animate: Vec::new(),
+            animation_row: Vec::new(),
+            board_state: None,
+            first_frame_post_animation: false,
         }
     }
 
     pub fn draw(&mut self, board: &mut Board) {
         let board_state = get_board_state(&board);
+        let num_cols = board_state.num_cols;
+        let num_frames_to_animate = num_cols as i32 / 2;
+        let sleep_between_animated_frames = || thread::sleep(std::time::Duration::from_millis(80));
 
         if board.row_removal_animation_is_pending() && self.drawing_row_removal_animation == false {
+            self.board_state = Some(board_state.clone());
             self.drawing_row_removal_animation = true;
-            self.animation_frames_left_to_draw = 10;
+            self.animation_frames_left_to_draw = num_frames_to_animate;
+            self.indices_of_full_rows_to_animate = get_indices_of_full_rows(
+                &self
+                    .board_state
+                    .as_ref()
+                    .unwrap()
+                    .visible_rows_just_before_removal_of_full_rows,
+            );
+            self.animation_row = vec![cell::Cell::new_with_state(cell::State::Stack); num_cols];
         }
 
         if self.animation_frames_left_to_draw > 0 {
-            self.animation_frames_left_to_draw -= 1;
-            print_rows(
-                &board_state.visible_rows_just_before_removal_of_full_rows,
-                "Renderer before",
-            );
-            print_rows(&board_state.visible_rows, "Renderer after");
-
+            self.first_frame_post_animation = true;
+            // print_rows(
+            //     &board_state.visible_rows_just_before_removal_of_full_rows,
+            //     "Renderer before",
+            // );
+            // print_rows(&board_state.visible_rows, "Renderer after");
+            println!("{:?}", self.indices_of_full_rows_to_animate);
+            println!("anim row:");
+            print_row(&self.animation_row);
             draw_helper(
-                &board_state,
+                &self.board_state.as_ref().unwrap(),
                 WhichStateToDraw::JustBeforeRemovalOfFullRows,
                 &self.canvas_size,
                 self.font_size,
             );
-            thread::sleep(std::time::Duration::from_millis(100));
+
+            make_next_frame_of_row_removal_animation(
+                &mut self
+                    .board_state
+                    .as_mut()
+                    .unwrap()
+                    .visible_rows_just_before_removal_of_full_rows,
+                &self.indices_of_full_rows_to_animate,
+                &mut self.animation_row,
+            );
+            if num_frames_to_animate != self.animation_frames_left_to_draw {
+                sleep_between_animated_frames();
+            }
+            self.animation_frames_left_to_draw -= 1;
         } else {
             board.set_row_removal_animation_is_pending_to_false();
             self.drawing_row_removal_animation = false;
+            if self.first_frame_post_animation {
+                self.first_frame_post_animation = false;
+                sleep_between_animated_frames();
+            }
             draw_helper(
                 &board_state,
                 WhichStateToDraw::Current,
@@ -89,15 +129,19 @@ impl Renderer {
     }
 }
 
-fn print_rows(rows: &Vec<super::board::Row>, desc: &str) {
+fn print_rows(rows: &Vec<Row>, desc: &str) {
     println!("{desc}:");
     for row in rows.iter() {
-        print!("|");
-        for cell in row.iter() {
-            print_cell(&cell);
-        }
-        println!("|");
+        print_row(row);
     }
+}
+
+fn print_row(row: &Row) {
+    print!("|");
+    for cell in row.iter() {
+        print_cell(&cell);
+    }
+    println!("|");
 }
 
 fn print_cell(cell: &cell::Cell) {
@@ -128,6 +172,18 @@ fn get_board_state(board: &Board) -> BoardState {
         ghost_cursor_positions,
         num_hidden_rows,
     }
+}
+
+fn get_indices_of_full_rows(rows: &Vec<Row>) -> Vec<usize> {
+    rows.iter()
+        .enumerate()
+        .filter(|&(_, row)| is_full(&row))
+        .map(|(index, _)| index)
+        .collect()
+}
+
+fn is_full(row: &Row) -> bool {
+    return row.iter().all(|&cell| cell.state == cell::State::Stack);
 }
 
 enum WhichStateToDraw {
@@ -168,6 +224,43 @@ fn draw_helper(
             cell_size,
         );
     }
+}
+
+fn make_next_frame_of_row_removal_animation(
+    rows: &mut Vec<Row>,
+    indices_of_full_rows_to_animate: &Vec<usize>,
+    mut animation_row: &mut Row,
+) {
+    enlarge_middle_gap(&mut animation_row);
+
+    print_rows(&rows, "Before replacement");
+    for &index in indices_of_full_rows_to_animate {
+        (*rows)[index] = animation_row.clone();
+    }
+    print_rows(&rows, "After replacement");
+}
+
+fn enlarge_middle_gap(animation_row: &mut Row) {
+    let len = animation_row.len();
+    let i1 = (|| {
+        let opt_idx_of_1st_non_stack = animation_row
+            .iter()
+            .position(|cell| !matches!(cell.state, cell::State::Stack));
+
+        if opt_idx_of_1st_non_stack.is_some() {
+            let idx_of_1st_non_stack = opt_idx_of_1st_non_stack.unwrap();
+            if idx_of_1st_non_stack == 0 {
+                0
+            } else {
+                idx_of_1st_non_stack - 1
+            }
+        } else {
+            len / 2
+        }
+    })();
+    let i2 = len - i1 - 1;
+    animation_row[i1].state = cell::State::Empty;
+    animation_row[i2].state = cell::State::Empty;
 }
 
 fn calc_cell_size_in_pixels(

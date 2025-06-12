@@ -16,4 +16,8 @@ impl Cell {
             state: State::Empty,
         }
     }
+
+    pub fn new_with_state(state: State) -> Self {
+        Cell { state }
+    }
 }
