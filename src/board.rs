@@ -63,27 +63,56 @@ impl Board {
         use crate::tetromino_move::TetrominoMove;
 
         match tetromino_move {
-            TetrominoMove::Down => {
-                let mut cell = &mut self.rows[self.cursor.position.y as usize]
-                    [self.cursor.position.x as usize];
-                Self::set_state(&mut cell, cell::State::Empty);
-                self.cursor.position.y += if self.cursor.position.y < self.num_rows - 1 {
-                    1
-                } else {
-                    0
-                };
-                let mut cell = &mut self.rows[self.cursor.position.y as usize]
-                    [self.cursor.position.x as usize];
-                Self::set_state(&mut cell, cell::State::Cursor);
-                println!("self.cursor.position.y {:?}", self.cursor.position.y);
-            }
-            TetrominoMove::Left => (),
-            TetrominoMove::Right => (),
+            TetrominoMove::Down  => self.move_cursor_down(),
+            TetrominoMove::Left  => self.move_cursor_left(),
+            TetrominoMove::Right => self.move_cursor_right(),
             TetrominoMove::RotateCW => (),
             TetrominoMove::RotateCCW => (),
         }
     }
 
+    fn move_cursor_down(&mut self) {
+        self.move_cursor(|board: &mut Board| {
+            // TODO: Placeholder logic, good enough for now until I implement the collision logic:
+            if board.cursor.position.y < board.num_rows - 1 {
+                board.cursor.position.y += 1;
+            };
+        });
+    }
+
+    fn move_cursor_left(&mut self) {
+        self.move_cursor(|board: &mut Board| {
+            // TODO: Placeholder logic, good enough for now until I implement the collision logic:
+            if board.cursor.position.x > 0 {
+                board.cursor.position.x -= 1;
+            }
+        });
+    }
+
+    fn move_cursor_right(&mut self) {
+        self.move_cursor(|board: &mut Board| {
+            // TODO: Placeholder logic, good enough for now until I implement the collision logic:
+            if board.cursor.position.x < board.num_cols - 1 {
+                board.cursor.position.x += 1;
+            }
+        });
+    }
+
+    fn move_cursor<UpdatePosition>(&mut self, mut updatePosition: UpdatePosition)
+    where
+        UpdatePosition: FnMut(&mut Self),
+    {
+        {
+            let mut cell =
+                &mut self.rows[self.cursor.position.y as usize][self.cursor.position.x as usize];
+            Self::set_state(&mut cell, cell::State::Empty);
+
+            updatePosition(self);
+        }
+        let mut cell =
+            &mut self.rows[self.cursor.position.y as usize][self.cursor.position.x as usize];
+        Self::set_state(&mut cell, cell::State::Cursor);
+    }
     pub fn draw(&self) {
         request_new_screen_size(
             CELL_SIZE * self.num_cols as f32,

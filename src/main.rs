@@ -12,7 +12,7 @@ use std::collections::LinkedList;
 use std::time::{Duration, Instant};
 
 const SQUARES: i16 = 16;
-const DEBOUNCE: Duration = Duration::from_millis(250);
+const DEBOUNCE: Duration = Duration::from_millis(50);
 
 type Point = (i16, i16);
 
