@@ -311,8 +311,7 @@ fn enlarge_middle_gap(animation_row: &mut DisplayRow) {
             !matches!(cell_display_state, CellDisplayState::BeingRemoved)
         });
 
-        if opt_idx_of_1st_non_stack.is_some() {
-            let idx_of_1st_non_stack = opt_idx_of_1st_non_stack.unwrap();
+        if let Some(idx_of_1st_non_stack) = opt_idx_of_1st_non_stack {
             if idx_of_1st_non_stack == 0 {
                 0
             } else {
