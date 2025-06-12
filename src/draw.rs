@@ -20,11 +20,21 @@ pub struct SizeInPixels {
     pub height: f32,
 }
 
+#[derive(PartialEq, Copy, Clone)]
+enum CellDisplayState {
+    Empty,
+    Cursor,
+    Stack,
+    BeingRemoved,
+}
+
+type DisplayRow = Vec<CellDisplayState>;
+
 #[derive(Clone)]
 struct BoardState {
     num_cols: usize,
-    visible_rows: Vec<Row>,
-    visible_rows_just_before_removal_of_full_rows: Vec<Row>,
+    visible_rows: Vec<DisplayRow>,
+    visible_rows_just_before_removal_of_full_rows: Vec<DisplayRow>,
     next_piece: cursor::piece::Piece,
     score: i32,
     ghost_cursor_positions: Vec<Position>,
@@ -37,7 +47,7 @@ pub struct Renderer {
     drawing_row_removal_animation: bool,
     animation_frames_left_to_draw: i32,
     indices_of_full_rows_to_animate: Vec<usize>,
-    animation_row: Row,
+    animation_row: DisplayRow,
     board_state: Option<BoardState>,
     first_frame_post_animation: bool,
 }
@@ -106,7 +116,7 @@ impl Renderer {
                 .unwrap()
                 .visible_rows_just_before_removal_of_full_rows,
         );
-        self.animation_row = vec![cell::Cell::new_with_state(cell::State::Stack); num_cols];
+        self.animation_row = vec![CellDisplayState::BeingRemoved; num_cols];
     }
 
     fn draw_next_row_removal_animation_frame(&mut self) {
@@ -162,14 +172,14 @@ impl Renderer {
     }
 }
 
-fn print_rows(rows: &Vec<Row>, desc: &str) {
+fn print_rows(rows: &Vec<DisplayRow>, desc: &str) {
     println!("{desc}:");
     for row in rows.iter() {
         print_row(row);
     }
 }
 
-fn print_row(row: &Row) {
+fn print_row(row: &DisplayRow) {
     print!("|");
     for cell in row.iter() {
         print_cell(&cell);
@@ -177,21 +187,24 @@ fn print_row(row: &Row) {
     println!("|");
 }
 
-fn print_cell(cell: &cell::Cell) {
-    let ch = match cell.state {
-        cell::State::Empty => " ",
-        cell::State::Cursor => "*",
-        cell::State::Stack => "x",
+fn print_cell(cell_display_state: &CellDisplayState) {
+    let ch = match cell_display_state {
+        CellDisplayState::Empty => " ",
+        CellDisplayState::Cursor => "*",
+        CellDisplayState::Stack => "x",
+        CellDisplayState::BeingRemoved => "y",
     };
     print!("{ch}");
 }
 
 fn get_board_state(board: &Board) -> BoardState {
     let num_cols = board.num_cols();
-    let visible_rows = board.visible_rows().to_vec();
-    let visible_rows_just_before_removal_of_full_rows = board
-        .visible_rows_just_before_removal_of_full_rows()
-        .to_vec();
+    let visible_rows = rows_to_display_rows(board.visible_rows().to_vec());
+    let visible_rows_just_before_removal_of_full_rows = rows_to_display_rows(
+        board
+            .visible_rows_just_before_removal_of_full_rows()
+            .to_vec(),
+    );
     let next_piece = board.next_piece().clone();
     let score = board.score();
     let ghost_cursor_positions = board.ghost_cursor_positions();
@@ -207,7 +220,25 @@ fn get_board_state(board: &Board) -> BoardState {
     }
 }
 
-fn get_indices_of_full_rows(rows: &Vec<Row>) -> Vec<usize> {
+fn rows_to_display_rows(src: Vec<Row>) -> Vec<DisplayRow> {
+    src.into_iter().map(|row| row_to_display_row(row)).collect()
+}
+
+fn row_to_display_row(src: Row) -> DisplayRow {
+    src.into_iter()
+        .map(|cell| cell_to_cell_display_state(cell))
+        .collect()
+}
+
+fn cell_to_cell_display_state(src: cell::Cell) -> CellDisplayState {
+    match src.state {
+        cell::State::Empty => CellDisplayState::Empty,
+        cell::State::Cursor => CellDisplayState::Cursor,
+        cell::State::Stack => CellDisplayState::Stack,
+    }
+}
+
+fn get_indices_of_full_rows(rows: &Vec<DisplayRow>) -> Vec<usize> {
     rows.iter()
         .enumerate()
         .filter(|&(_, row)| is_full(&row))
@@ -215,8 +246,10 @@ fn get_indices_of_full_rows(rows: &Vec<Row>) -> Vec<usize> {
         .collect()
 }
 
-fn is_full(row: &Row) -> bool {
-    return row.iter().all(|&cell| cell.state == cell::State::Stack);
+fn is_full(row: &DisplayRow) -> bool {
+    return row
+        .iter()
+        .all(|&cell_display_state| cell_display_state == CellDisplayState::Stack);
 }
 
 enum DrawMode {
@@ -243,8 +276,8 @@ fn draw_helper(
     draw_score(board_state.score, num_board_cols, cell_size, font_size);
 
     for (y, row) in visible_rows.iter().enumerate() {
-        for (x, cell) in row.iter().enumerate() {
-            draw_cell(cell.state.clone(), x, y, cell_size);
+        for (x, cell_display_state) in row.iter().enumerate() {
+            draw_cell(cell_display_state.clone(), x, y, cell_size);
         }
     }
 
@@ -258,9 +291,9 @@ fn draw_helper(
 }
 
 fn make_next_frame_of_row_removal_animation(
-    rows: &mut Vec<Row>,
+    rows: &mut Vec<DisplayRow>,
     indices_of_full_rows_to_animate: &Vec<usize>,
-    mut animation_row: &mut Row,
+    mut animation_row: &mut DisplayRow,
 ) {
     enlarge_middle_gap(&mut animation_row);
 
@@ -271,12 +304,12 @@ fn make_next_frame_of_row_removal_animation(
     print_rows(&rows, "After replacement");
 }
 
-fn enlarge_middle_gap(animation_row: &mut Row) {
+fn enlarge_middle_gap(animation_row: &mut DisplayRow) {
     let len = animation_row.len();
     let i1 = (|| {
-        let opt_idx_of_1st_non_stack = animation_row
-            .iter()
-            .position(|cell| !matches!(cell.state, cell::State::Stack));
+        let opt_idx_of_1st_non_stack = animation_row.iter().position(|cell_display_state| {
+            !matches!(cell_display_state, CellDisplayState::BeingRemoved)
+        });
 
         if opt_idx_of_1st_non_stack.is_some() {
             let idx_of_1st_non_stack = opt_idx_of_1st_non_stack.unwrap();
@@ -290,8 +323,8 @@ fn enlarge_middle_gap(animation_row: &mut Row) {
         }
     })();
     let i2 = len - i1 - 1;
-    animation_row[i1].state = cell::State::Empty;
-    animation_row[i2].state = cell::State::Empty;
+    animation_row[i1] = CellDisplayState::Empty;
+    animation_row[i2] = CellDisplayState::Empty;
 }
 
 fn calc_cell_size_in_pixels(
@@ -323,23 +356,30 @@ fn draw_preview_of_next_piece(next_piece: &Piece, num_board_cols: usize, cell_si
     for &pos in next_piece.get_local_points().iter() {
         let cell_col_idx = (base_col_idx as i32 + pos.x) as usize;
         let cell_row_idx = (base_row_idx as i32 + pos.y) as usize;
-        draw_cell(cell::State::Cursor, cell_col_idx, cell_row_idx, cell_size);
+        draw_cell(
+            CellDisplayState::Cursor,
+            cell_col_idx,
+            cell_row_idx,
+            cell_size,
+        );
     }
 }
 
-fn draw_cell(state: cell::State, col_idx: usize, row_idx: usize, cell_size: f32) {
+fn draw_cell(cell_display_state: CellDisplayState, col_idx: usize, row_idx: usize, cell_size: f32) {
     #[rustfmt::skip]
-    let outline_color = match state {
-        cell::State::Empty  => Color::new(0.99, 0.99, 0.99, 1.00),
-        cell::State::Cursor => BEIGE,
-        cell::State::Stack  => GRAY,
+    let outline_color = match cell_display_state {
+        CellDisplayState::Empty        => Color::new(0.99, 0.99, 0.99, 1.00),
+        CellDisplayState::Cursor       => BEIGE,
+        CellDisplayState::Stack        => GRAY,
+        CellDisplayState::BeingRemoved => LIME,
     };
 
     #[rustfmt::skip]
-    let fill_color = match state {
-        cell::State::Empty  => WHITE,
-        cell::State::Cursor => BROWN,
-        cell::State::Stack  => DARKGRAY,
+    let fill_color = match cell_display_state {
+        CellDisplayState::Empty         => WHITE,
+        CellDisplayState::Cursor        => BROWN,
+        CellDisplayState::Stack         => DARKGRAY,
+        CellDisplayState::BeingRemoved  => GREEN,
     };
 
     draw_rectangle_lines(
