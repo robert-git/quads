@@ -28,6 +28,7 @@ pub struct Board {
 
 const NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS: usize = 4;
 type ToppedOut = bool;
+type NumRowsClearedThisUpdate = usize;
 
 impl Board {
     pub fn new() -> Self {
@@ -84,8 +85,12 @@ impl Board {
     }
 
     #[must_use]
-    pub fn update(&mut self, tetromino_move: TetrominoMove) -> ToppedOut {
+    pub fn update(
+        &mut self,
+        tetromino_move: TetrominoMove,
+    ) -> (ToppedOut, NumRowsClearedThisUpdate) {
         let mut topped_out: ToppedOut = false;
+        let mut rows_cleared_this_update = 0;
 
         let hard_drop_y = self.calc_hard_drop_y(&self.cursor);
 
@@ -100,17 +105,21 @@ impl Board {
                 TetrominoMove::UserSoftDown => self.score += 1,
                 TetrominoMove::UserHardDown => {
                     self.score += 12;
-                    topped_out = self.run_docking_sequence();
+                    let (new_topped_out, rows_cleared) = self.run_docking_sequence();
+                    topped_out = new_topped_out;
+                    rows_cleared_this_update = rows_cleared;
                 }
                 _ => (),
             }
         } else if tetromino_move == TetrominoMove::AutoDown
             || tetromino_move == TetrominoMove::UserSoftDown
         {
-            topped_out = self.run_docking_sequence();
+            let (new_topped_out, rows_cleared) = self.run_docking_sequence();
+            topped_out = new_topped_out;
+            rows_cleared_this_update = rows_cleared;
         }
 
-        topped_out
+        (topped_out, rows_cleared_this_update)
     }
 
     fn calc_hard_drop_y(&self, cursor: &Cursor) -> i32 {
@@ -124,13 +133,13 @@ impl Board {
         hard_drop_y - 1
     }
 
-    fn run_docking_sequence(&mut self) -> ToppedOut {
+    fn run_docking_sequence(&mut self) -> (ToppedOut, NumRowsClearedThisUpdate) {
         self.dock_cursor_to_stack();
         self.rows_just_before_removal_of_full_rows = self.rows.clone();
-        self.remove_full_rows_from_stack();
+        let num_rows_cleared = self.remove_full_rows_from_stack();
         let topped_out = self.stack_height() >= self.num_visible_rows;
         self.drop_new_piece();
-        topped_out
+        (topped_out, num_rows_cleared)
     }
 
     fn fits_on_board(&self, cursor: &Cursor) -> bool {
@@ -164,7 +173,7 @@ impl Board {
         self.set_cell_states_at_cursor(cell::State::Stack);
     }
 
-    fn remove_full_rows_from_stack(&mut self) {
+    fn remove_full_rows_from_stack(&mut self) -> NumRowsClearedThisUpdate {
         let orig_num_rows = self.rows.len();
         self.rows.retain(|row| is_not_a_full_row(row));
         let num_removed_rows = orig_num_rows - self.rows.len();
@@ -174,6 +183,7 @@ impl Board {
         if num_removed_rows > 0 {
             self.row_removal_animation_is_pending = true;
         }
+        num_removed_rows
     }
 
     fn stack_height(&self) -> usize {

@@ -24,6 +24,9 @@ async fn main() {
     let canvas_size = get_window_dims(BASELINE_CANVAS_WIDTH, BASELINE_CANVAS_HEIGHT);
     let mut gp = initialize_game();
 
+    let mut total_rows_cleared = 0;
+    let mut next_row_thresh_for_speedup = 4;
+
     let mut renderer = Renderer::new(&canvas_size);
 
     loop {
@@ -64,9 +67,15 @@ async fn main() {
                 }
 
                 if gp.opt_tetromino_move.is_some() {
-                    let topped_out = gp.board.update(gp.opt_tetromino_move.unwrap());
+                    let (topped_out, num_rows_cleared_this_update) =
+                        gp.board.update(gp.opt_tetromino_move.unwrap());
                     if topped_out {
                         gp.game_over = true;
+                    }
+                    total_rows_cleared += num_rows_cleared_this_update;
+                    if total_rows_cleared >= next_row_thresh_for_speedup {
+                        next_row_thresh_for_speedup += next_row_thresh_for_speedup;
+                        gp.auto_drop_interval = scale_duration(gp.auto_drop_interval, 0.5);
                     }
                 }
 
@@ -130,6 +139,12 @@ fn reset_game_when_apt(gp: &mut GameParams) {
     if is_key_down(KeyCode::Enter) {
         *gp = initialize_game();
     }
+}
+
+fn scale_duration(duration: Duration, scale_factor: f64) -> Duration {
+    let total_millis = duration.as_millis() as f64;
+    let new_total_millis = total_millis * scale_factor;
+    Duration::from_millis(new_total_millis.round() as u64)
 }
 
 fn get_user_action(last_key_time: &mut Instant) -> Option<UserAction> {
