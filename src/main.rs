@@ -1,10 +1,10 @@
-mod action;
+mod user_action;
 mod board;
 mod draw;
 mod tetromino_move;
 
-use action::to_tetromino_move;
-use action::Action;
+use user_action::to_tetromino_move;
+use user_action::UserAction;
 use board::Board;
 use macroquad::color::colors::LIGHTGRAY;
 use macroquad::prelude::{
@@ -37,19 +37,19 @@ async fn main() {
 
             let now = Instant::now();
             if now - gp.last_down_move_time > gp.auto_drop_interval {
-                gp.opt_tetromino_move = Some(TetrominoMove::Down);
+                gp.opt_tetromino_move = Some(TetrominoMove::AutoDown);
                 gp.last_down_move_time = now;
                 println!("Auto down");
             } else {
                 if opt_user_action.is_some() {
                     let action = opt_user_action.unwrap();
-                    if action == Action::Quit {
+                    if action == UserAction::Quit {
                         gp.game_over = true;
                     } else {
                         gp.opt_tetromino_move = to_tetromino_move(action);
                         if gp.opt_tetromino_move.is_some() {
                             let tetromino_move = gp.opt_tetromino_move.unwrap();
-                            if tetromino_move == TetrominoMove::Down {
+                            if tetromino_move == TetrominoMove::UserDown {
                                 gp.last_down_move_time = now;
                             }
                             println!("tetromino_move {:?}", tetromino_move);
@@ -109,7 +109,7 @@ fn reset_game_when_apt(gp: &mut GameParams) {
     }
 }
 
-fn get_user_action(last_key_time: &mut Instant) -> Option<Action> {
+fn get_user_action(last_key_time: &mut Instant) -> Option<UserAction> {
     let now = Instant::now();
     if now - *last_key_time < INPUT_DEBOUNCE {
         return None;
@@ -121,7 +121,7 @@ fn get_user_action(last_key_time: &mut Instant) -> Option<Action> {
         let opt_action = to_action(key);
         if opt_action.is_some() {
             let action = opt_action.unwrap();
-            if action == Action::RotateCW || action == Action::RotateCCW {
+            if action == UserAction::RotateCW || action == UserAction::RotateCCW {
                 if now - *last_key_time < ROTATION_DEBOUNCE {
                     return None;
                 }
@@ -135,14 +135,14 @@ fn get_user_action(last_key_time: &mut Instant) -> Option<Action> {
 }
 
 #[rustfmt::skip]
-fn to_action(key: KeyCode) -> Option<Action> {
+fn to_action(key: KeyCode) -> Option<UserAction> {
     match key {
-        KeyCode::Down  => Some(Action::Down),
-        KeyCode::Left  => Some(Action::Left),
-        KeyCode::Right => Some(Action::Right),
-        KeyCode::Up    => Some(Action::RotateCW),
-        KeyCode::Slash => Some(Action::RotateCCW),
-        KeyCode::Q     => Some(Action::Quit),
+        KeyCode::Down  => Some(UserAction::Down),
+        KeyCode::Left  => Some(UserAction::Left),
+        KeyCode::Right => Some(UserAction::Right),
+        KeyCode::Up    => Some(UserAction::RotateCW),
+        KeyCode::Slash => Some(UserAction::RotateCCW),
+        KeyCode::Q     => Some(UserAction::Quit),
         _              => None,
     }
 }

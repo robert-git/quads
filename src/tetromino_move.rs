@@ -1,6 +1,7 @@
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum TetrominoMove {
-    Down,
+    AutoDown,
+    UserDown,
     Left,
     Right,
     RotateCW,

@@ -88,7 +88,9 @@ impl Board {
             self.cursor = new_cursor;
             self.set_cell_states_at_cursor(cell::State::Cursor);
         } else {
-            if tetromino_move == TetrominoMove::Down {
+            if tetromino_move == TetrominoMove::AutoDown
+                || tetromino_move == TetrominoMove::UserDown
+            {
                 self.dock_cursor_to_stack();
                 self.remove_full_rows_from_stack();
                 topped_out = self.stack_height() >= self.num_visible_rows;
@@ -184,10 +186,16 @@ fn calc_new_cursor_pos_and_orientation(curr: &Cursor, tetromino_move: TetrominoM
     let cur_x = curr_pos.x;
     let cur_y = curr_pos.y;
     match tetromino_move {
-        TetrominoMove::Down  => return curr.offset_copy(Position {x: cur_x    , y: cur_y + 1}),
-        TetrominoMove::Left  => return curr.offset_copy(Position {x: cur_x - 1, y: cur_y}),
-        TetrominoMove::Right => return curr.offset_copy(Position {x: cur_x + 1, y: cur_y}),
-        TetrominoMove::RotateCW  => return curr.rotate_cw_copy(),
+        TetrominoMove::AutoDown | TetrominoMove::UserDown => {
+            return curr.offset_copy(Position {x: cur_x, y: cur_y + 1,})
+        }
+        TetrominoMove::Left => {
+            return curr.offset_copy(Position {x: cur_x - 1, y: cur_y,})
+        }
+        TetrominoMove::Right => {
+            return curr.offset_copy(Position {x: cur_x + 1,y: cur_y,})
+        }
+        TetrominoMove::RotateCW => return curr.rotate_cw_copy(),
         TetrominoMove::RotateCCW => return curr.rotate_ccw_copy(),
     }
 }
