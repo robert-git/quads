@@ -9,6 +9,8 @@ use cursor::Cursor;
 use macroquad::prelude::rand;
 use position::Position;
 use std::collections::VecDeque;
+use std::fs::{metadata, File};
+use std::io::{self, BufRead, Write};
 
 pub type Row = Vec<Cell>;
 
@@ -22,6 +24,7 @@ pub struct Board {
     cursor: Cursor,
     next_shape_candidates: Vec<Shape>,
     score: i32,
+    high_score: i32,
     row_removal_animation_is_pending: bool,
     rows_just_before_removal_of_full_rows: Vec<Row>,
 }
@@ -79,6 +82,7 @@ impl Board {
             cursor_queue,
             next_shape_candidates,
             score: 0,
+            high_score: read_high_score_from_file(),
             row_removal_animation_is_pending: false,
             rows_just_before_removal_of_full_rows,
         }
@@ -102,9 +106,9 @@ impl Board {
             self.cursor = new_cursor;
             self.set_cell_states_at_cursor(cell::State::Cursor);
             match tetromino_move {
-                TetrominoMove::UserSoftDown => self.score += 1,
+                TetrominoMove::UserSoftDown => self.increment_score_by(1),
                 TetrominoMove::UserHardDown => {
-                    self.score += 12;
+                    self.increment_score_by(12);
                     let (new_topped_out, rows_cleared) = self.run_docking_sequence();
                     topped_out = new_topped_out;
                     rows_cleared_this_update = rows_cleared;
@@ -179,7 +183,7 @@ impl Board {
         let num_removed_rows = orig_num_rows - self.rows.len();
         let new_rows = vec![vec![Cell::new(); self.num_cols]; num_removed_rows];
         self.rows.splice(0..0, new_rows);
-        self.score += get_points(num_removed_rows);
+        self.increment_score_by(get_points(num_removed_rows));
         if num_removed_rows > 0 {
             self.row_removal_animation_is_pending = true;
         }
@@ -242,8 +246,18 @@ impl Board {
         &self.cursor_queue.front().unwrap().piece
     }
 
+    fn increment_score_by(&mut self, increment_amount: i32) {
+        self.score += increment_amount;
+        self.high_score = self.score.max(self.high_score);
+        write_high_score_to_file(self.high_score);
+    }
+
     pub fn score(&self) -> i32 {
         self.score
+    }
+
+    pub fn high_score(&self) -> i32 {
+        self.high_score
     }
 
     pub fn row_removal_animation_is_pending(&self) -> bool {
@@ -252,6 +266,45 @@ impl Board {
 
     pub fn set_row_removal_animation_is_pending_to_false(&mut self) {
         self.row_removal_animation_is_pending = false;
+    }
+}
+
+const FILENAME_HIGH_SCORE: &str = "high_score.txt";
+
+fn read_high_score_from_file() -> i32 {
+    if metadata(FILENAME_HIGH_SCORE).is_ok() {
+        if let Ok(file) = File::open(FILENAME_HIGH_SCORE) {
+            let reader = io::BufReader::new(file);
+
+            // Read the first line from the file
+            if let Some(Ok(line)) = reader.lines().next() {
+                // Attempt to parse the line as an i32
+                if let Ok(number) = line.trim().parse::<i32>() {
+                    return number;
+                }
+            }
+        }
+    }
+
+    // Return 0 if the file doesn't exist or if parsing fails
+    0
+}
+
+fn write_high_score_to_file(high_score: i32) {
+    // Attempt to open the file in write-only mode, creating it if it doesn't exist
+    let mut file = match File::create(FILENAME_HIGH_SCORE) {
+        Ok(file) => file,
+        Err(e) => {
+            eprintln!("Failed to create or open file: {}", e);
+            return; // Exit the function if file opening fails
+        }
+    };
+
+    // Attempt to write the number to the file
+    if let Err(e) = writeln!(file, "{}", high_score) {
+        eprintln!("Failed to write to file: {}", e);
+    } else {
+        println!("Number {} written to {}", high_score, FILENAME_HIGH_SCORE);
     }
 }
 

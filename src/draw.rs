@@ -433,10 +433,11 @@ impl Renderer {
 
         let y_base = screen_height() / 2.0;
         let final_score = board.score();
+        let high_score = board.high_score();
         let lines = vec![
             String::from("Game Over. Press [enter] to play again."),
             format!("Final score: {final_score}"),
-            String::from("(High Score:)"),
+            format!("High score: {high_score}"),
         ];
 
         let opt_tallest_line = lines.iter().max_by_key(|line| {
