@@ -58,74 +58,107 @@ impl Renderer {
         }
     }
 
-    pub fn draw(&mut self, board: &mut Board) {
+    pub fn draw(&mut self, mut board: &mut Board) {
         let board_state = get_board_state(&board);
         let num_cols = board_state.num_cols;
         let num_frames_to_animate = num_cols as i32 / 2;
-        let sleep_between_animated_frames = || thread::sleep(std::time::Duration::from_millis(60));
+        let delay_between_animated_frames = std::time::Duration::from_millis(60);
 
         if board.row_removal_animation_is_pending() && self.drawing_row_removal_animation == false {
-            self.board_state = Some(board_state.clone());
-            self.drawing_row_removal_animation = true;
-            self.animation_frames_left_to_draw = num_frames_to_animate;
-            self.indices_of_full_rows_to_animate = get_indices_of_full_rows(
-                &self
-                    .board_state
-                    .as_ref()
-                    .unwrap()
-                    .visible_rows_just_before_removal_of_full_rows,
-            );
-            self.animation_row = vec![cell::Cell::new_with_state(cell::State::Stack); num_cols];
+            self.initialize_row_removal_animation(board_state.clone(), num_frames_to_animate);
         }
 
         if self.animation_frames_left_to_draw > 0 {
-            self.first_frame_post_animation = true;
-            // print_rows(
-            //     &board_state.visible_rows_just_before_removal_of_full_rows,
-            //     "Renderer before",
-            // );
-            // print_rows(&board_state.visible_rows, "Renderer after");
-            println!("{:?}", self.indices_of_full_rows_to_animate);
-            println!("anim row:");
-            print_row(&self.animation_row);
-            draw_helper(
-                &self.board_state.as_ref().unwrap(),
-                WhichStateToDraw::JustBeforeRemovalOfFullRows,
-                &self.canvas_size,
-                self.font_size,
-            );
+            let first_frame_of_current_animation =
+                num_frames_to_animate == self.animation_frames_left_to_draw;
 
-            make_next_frame_of_row_removal_animation(
-                &mut self
-                    .board_state
-                    .as_mut()
-                    .unwrap()
-                    .visible_rows_just_before_removal_of_full_rows,
-                &self.indices_of_full_rows_to_animate,
-                &mut self.animation_row,
-            );
-            if num_frames_to_animate != self.animation_frames_left_to_draw {
-                sleep_between_animated_frames();
+            self.animate_next_row_removal_frame();
+
+            if !first_frame_of_current_animation {
+                thread::sleep(delay_between_animated_frames);
             }
-            self.animation_frames_left_to_draw -= 1;
         } else {
-            board.set_row_removal_animation_is_pending_to_false();
-            self.drawing_row_removal_animation = false;
-            if self.first_frame_post_animation {
-                self.first_frame_post_animation = false;
-                sleep_between_animated_frames();
-            }
-            draw_helper(
+            self.draw_normal_non_animated_board_state(
+                &mut board,
+                delay_between_animated_frames,
                 &board_state,
-                WhichStateToDraw::Current,
-                &self.canvas_size,
-                self.font_size,
             );
         }
     }
 
     pub fn drawing_row_removal_animation(&self) -> bool {
         self.drawing_row_removal_animation
+    }
+
+    fn initialize_row_removal_animation(
+        &mut self,
+        board_state: BoardState,
+        num_frames_to_animate: i32,
+    ) {
+        let num_cols = board_state.num_cols;
+        self.board_state = Some(board_state);
+        self.drawing_row_removal_animation = true;
+        self.animation_frames_left_to_draw = num_frames_to_animate;
+        self.indices_of_full_rows_to_animate = get_indices_of_full_rows(
+            &self
+                .board_state
+                .as_ref()
+                .unwrap()
+                .visible_rows_just_before_removal_of_full_rows,
+        );
+        self.animation_row = vec![cell::Cell::new_with_state(cell::State::Stack); num_cols];
+    }
+
+    fn animate_next_row_removal_frame(&mut self) {
+        self.first_frame_post_animation = true;
+        // print_rows(
+        //     &board_state.visible_rows_just_before_removal_of_full_rows,
+        //     "Renderer before",
+        // );
+        // print_rows(&board_state.visible_rows, "Renderer after");
+        println!("{:?}", self.indices_of_full_rows_to_animate);
+        println!("anim row:");
+        print_row(&self.animation_row);
+        draw_helper(
+            &self.board_state.as_ref().unwrap(),
+            WhichStateToDraw::JustBeforeRemovalOfFullRows,
+            &self.canvas_size,
+            self.font_size,
+        );
+
+        make_next_frame_of_row_removal_animation(
+            &mut self
+                .board_state
+                .as_mut()
+                .unwrap()
+                .visible_rows_just_before_removal_of_full_rows,
+            &self.indices_of_full_rows_to_animate,
+            &mut self.animation_row,
+        );
+        self.animation_frames_left_to_draw -= 1;
+    }
+
+    fn draw_normal_non_animated_board_state(
+        &mut self,
+        board: &mut Board,
+        delay_between_animated_frames: std::time::Duration,
+        board_state: &BoardState,
+    ) {
+        board.set_row_removal_animation_is_pending_to_false();
+
+        self.drawing_row_removal_animation = false;
+
+        if self.first_frame_post_animation {
+            self.first_frame_post_animation = false;
+            thread::sleep(delay_between_animated_frames);
+        }
+
+        draw_helper(
+            &board_state,
+            WhichStateToDraw::Current,
+            &self.canvas_size,
+            self.font_size,
+        );
     }
 }
 
