@@ -25,12 +25,34 @@ enum Action {
     Quit,
 }
 
+#[derive(Debug, PartialEq)]
+enum PieceMove {
+    Down,
+    Left,
+    Right,
+    RotateCW,
+    RotateCCW,
+}
+
+fn to_piece_move(action: Action) -> Option<PieceMove> {
+    match action {
+        Action::Down      => Some(PieceMove::Down),
+        Action::Left      => Some(PieceMove::Left),
+        Action::Right     => Some(PieceMove::Right),
+        Action::RotateCW  => Some(PieceMove::RotateCW),
+        Action::RotateCCW => Some(PieceMove::RotateCCW),
+        _ => None,
+    }
+}
+
 type KeyToActionMap = HashMap<KeyCode, Action>;
 
 #[macroquad::main("Quads")]
 async fn main() {
-    let interval = 1;
+    let auto_drop_interval = Duration::from_millis(2000);
+    let mut last_down_move_time = Instant::now();
     let mut run = true;
+    let mut piece_move = PieceMove::Down;
 
     #[rustfmt::skip]
     let key_to_action: KeyToActionMap = HashMap::from([
@@ -45,15 +67,31 @@ async fn main() {
     let mut last_key_time = Instant::now();
 
     while run {
-        let opt_action = get_user_action(&mut last_key_time, &key_to_action);
+        let opt_user_action = get_user_action(&mut last_key_time, &key_to_action);
 
-        if opt_action.is_some() {
-            let action = opt_action.unwrap();
-            println!("action {:?}", action);
+        let now = Instant::now();
+        if opt_user_action.is_some() {
+            let action = opt_user_action.unwrap();
+            // println!("action {:?}", action);
             if action == Action::Quit {
                 run = false;
+            } else {
+                let opt_piece_move = to_piece_move(action);
+                if opt_piece_move.is_some() {
+                    piece_move = opt_piece_move.unwrap();
+                    if piece_move == PieceMove::Down {
+                        last_down_move_time = now;
+                    }
+                    println!("piece_move {:?}", piece_move);
+                }
             }
         }
+
+        if now - last_down_move_time > auto_drop_interval {
+            last_down_move_time = now;
+            println!("Auto down");
+        }
+
         next_frame().await;
     }
     #[cfg(feature = "")]
