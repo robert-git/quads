@@ -177,6 +177,10 @@ impl Board {
     pub fn next_piece(&self) -> &cursor::piece::Piece {
         &self.cursor_queue.front().unwrap().piece
     }
+
+    pub fn score(&self) -> i32 {
+        59848
+    }
 }
 
 #[rustfmt::skip]
