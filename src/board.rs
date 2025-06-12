@@ -136,7 +136,8 @@ impl Board {
     }
 
     fn drop_new_piece(&mut self) {
-        let shape = self.next_shape_candidates[rand::gen_range(0, self.next_shape_candidates.len())];
+        let shape =
+            self.next_shape_candidates[rand::gen_range(0, self.next_shape_candidates.len())];
         self.cursor = Cursor {
             position: self.cursor_start_position.clone(),
             piece: Piece::new(shape),
