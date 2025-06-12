@@ -87,6 +87,9 @@ impl Board {
             self.set_cell_states_at_cursor(cell::State::Empty);
             self.cursor = new_cursor;
             self.set_cell_states_at_cursor(cell::State::Cursor);
+            if tetromino_move == TetrominoMove::UserDown {
+                self.score += 1;
+            }
         } else {
             if tetromino_move == TetrominoMove::AutoDown
                 || tetromino_move == TetrominoMove::UserDown
