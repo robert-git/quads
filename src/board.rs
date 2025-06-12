@@ -72,15 +72,6 @@ impl Board {
                 //DropNewPiece();
             }
         }
-        /*
-                match tetromino_move {
-                    TetrominoMove::Down => self.try_move_cursor_down(),
-                    TetrominoMove::Left => self.try_move_cursor_left(),
-                    TetrominoMove::Right => self.try_move_cursor_right(),
-                    TetrominoMove::RotateCW => (),
-                    TetrominoMove::RotateCCW => (),
-                }
-        */
     }
 
     #[rustfmt::skip]
@@ -116,42 +107,6 @@ impl Board {
 
     fn all_not_occupied_by_stack(&self, positions: &Vec<Position>) -> bool {
         return true;
-    }
-
-    fn try_move_cursor_down(&mut self) {
-        self.move_cursor(|board: &mut Board| {
-            // TODO: Placeholder logic, good enough for now until I implement the collision logic:
-            if board.cursor.position.y < board.num_rows - 1 {
-                board.cursor.position.y += 1;
-            };
-        });
-    }
-
-    fn try_move_cursor_left(&mut self) {
-        self.move_cursor(|board: &mut Board| {
-            // TODO: Placeholder logic, good enough for now until I implement the collision logic:
-            if board.cursor.position.x > 0 {
-                board.cursor.position.x -= 1;
-            }
-        });
-    }
-
-    fn try_move_cursor_right(&mut self) {
-        self.move_cursor(|board: &mut Board| {
-            // TODO: Placeholder logic, good enough for now until I implement the collision logic:
-            if board.cursor.position.x < board.num_cols - 1 {
-                board.cursor.position.x += 1;
-            }
-        });
-    }
-
-    fn move_cursor<UpdateCursorPosition>(&mut self, update_cursor_pos: UpdateCursorPosition)
-    where
-        UpdateCursorPosition: Fn(&mut Self),
-    {
-        self.set_cursor_state(cell::State::Empty);
-        update_cursor_pos(self);
-        self.set_cursor_state(cell::State::Cursor);
     }
 
     fn set_cursor_state(&mut self, state: cell::State) {
