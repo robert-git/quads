@@ -21,6 +21,7 @@ pub struct Board {
     cursor_queue: VecDeque<Cursor>,
     cursor: Cursor,
     next_shape_candidates: Vec<Shape>,
+    score: i32,
 }
 
 const NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS: usize = 4;
@@ -72,6 +73,7 @@ impl Board {
             cursor,
             cursor_queue,
             next_shape_candidates,
+            score: 0,
         }
     }
 
@@ -137,6 +139,7 @@ impl Board {
         let num_removed_rows = orig_num_rows - self.rows.len();
         let new_rows = vec![vec![Cell::new(); self.num_cols]; num_removed_rows];
         self.rows.splice(0..0, new_rows);
+        self.score += get_points(num_removed_rows);
     }
 
     fn stack_height(&self) -> usize {
@@ -179,7 +182,7 @@ impl Board {
     }
 
     pub fn score(&self) -> i32 {
-        59848
+        self.score
     }
 }
 
@@ -218,4 +221,14 @@ fn is_a_full_row(row: &Row) -> bool {
 
 fn contains_any_stack_cell(row: &Row) -> bool {
     return row.iter().any(|&cell| cell.state == cell::State::Stack);
+}
+
+fn get_points(num_rows_removed: usize) -> i32 {
+    match num_rows_removed {
+        1 => 100,
+        2 => 300,
+        3 => 500,
+        4 => 800,
+        _ => 0,
+    }
 }
