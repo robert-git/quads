@@ -12,7 +12,7 @@ pub struct Cursor {
 }
 
 impl Cursor {
-    pub fn random_shape(position: Position, shape_list: &Vec<Shape>) -> Cursor {
+    pub fn from_random_shape_in_list(position: Position, shape_list: &Vec<Shape>) -> Cursor {
         Cursor {
             position,
             piece: Piece::new(random_shape(&shape_list)),

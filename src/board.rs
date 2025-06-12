@@ -51,11 +51,11 @@ impl Board {
         };
 
         let mut cursor_queue = VecDeque::new();
-        cursor_queue.push_back(Cursor::random_shape(
+        cursor_queue.push_back(Cursor::from_random_shape_in_list(
             cursor_start_position.clone(),
             &next_shape_candidates,
         ));
-        cursor_queue.push_back(Cursor::random_shape(
+        cursor_queue.push_back(Cursor::from_random_shape_in_list(
             cursor_start_position.clone(),
             &next_shape_candidates,
         ));
@@ -153,7 +153,7 @@ impl Board {
     }
 
     fn drop_new_piece(&mut self) {
-        self.cursor_queue.push_back(Cursor::random_shape(
+        self.cursor_queue.push_back(Cursor::from_random_shape_in_list(
             self.cursor_start_position.clone(),
             &self.next_shape_candidates,
         ));
