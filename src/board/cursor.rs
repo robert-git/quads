@@ -1,4 +1,3 @@
 pub struct Cursor {
-    pub position: super::position::Position
+    pub position: super::position::Position,
 }
-
