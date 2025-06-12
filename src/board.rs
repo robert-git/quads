@@ -1,14 +1,12 @@
-mod cell;
-mod cursor;
+pub mod cell;
+pub mod cursor;
 mod position;
 
 use super::tetromino_move::TetrominoMove;
 use cell::Cell;
 use cursor::piece::Shape;
 use cursor::Cursor;
-use macroquad::color::colors::*;
-use macroquad::color::Color;
-use macroquad::prelude::{draw_rectangle, draw_rectangle_lines, rand};
+use macroquad::prelude::rand;
 use position::Position;
 use std::collections::VecDeque;
 
@@ -18,7 +16,6 @@ pub struct Board {
     num_visible_rows: usize,
     num_total_rows: usize,
     num_cols: usize,
-    cell_size: f32,
     rows: Vec<Row>,
     cursor_start_position: Position,
     cursor_queue: VecDeque<Cursor>,
@@ -26,20 +23,15 @@ pub struct Board {
     next_shape_candidates: Vec<Shape>,
 }
 
-const LINE_THICKNESS: f32 = 2.0;
 const NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS: usize = 4;
 type ToppedOut = bool;
 
 impl Board {
-    pub fn new(max_width: f32, max_height: f32) -> Self {
+    pub fn new() -> Self {
         rand::srand(macroquad::miniquad::date::now() as _);
         let num_visible_rows: usize = 20;
         let num_total_rows = num_visible_rows + NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS;
         let num_cols: usize = 10;
-
-        let cell_size_from_width = max_width / num_cols as f32;
-        let cell_size_from_height = max_height / num_visible_rows as f32;
-        let cell_size = cell_size_from_width.min(cell_size_from_height);
 
         let mut rows = vec![vec![Cell::new(); num_cols]; num_total_rows];
 
@@ -75,7 +67,6 @@ impl Board {
             num_visible_rows,
             num_total_rows,
             num_cols,
-            cell_size,
             rows,
             cursor_start_position,
             cursor,
@@ -174,26 +165,16 @@ impl Board {
         set_state_of_cells_at_cursor(&self.cursor, &mut self.rows, state);
     }
 
-    pub fn draw(&self) {
-        {
-            let preview_base_col: usize = self.num_cols + 3;
-            let preview_base_row: usize = 2;
-            draw_preview_piece(
-                self.cursor_queue.front().unwrap(),
-                preview_base_col,
-                preview_base_row,
-                self.cell_size,
-            );
-        }
+    pub fn num_cols(&self) -> usize {
+        self.num_cols
+    }
 
-        for (y, row) in self.rows[NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS..]
-            .iter()
-            .enumerate()
-        {
-            for (x, cell) in row.iter().enumerate() {
-                draw_cell(cell.state.clone(), x, y, self.cell_size);
-            }
-        }
+    pub fn visible_rows(&self) -> &[Row] {
+        &self.rows[NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS..]
+    }
+
+    pub fn upcoming_piece(&self) -> &cursor::piece::Piece {
+        &self.cursor_queue.front().unwrap().piece
     }
 }
 
@@ -232,45 +213,4 @@ fn is_a_full_row(row: &Row) -> bool {
 
 fn contains_any_stack_cell(row: &Row) -> bool {
     return row.iter().any(|&cell| cell.state == cell::State::Stack);
-}
-
-fn draw_preview_piece(cursor: &Cursor, base_col_idx: usize, base_row_idx: usize, cell_size: f32) {
-    for &pos in cursor.piece.get_local_points().iter() {
-        let cell_col_idx = (base_col_idx as i32 + pos.x) as usize;
-        let cell_row_idx = (base_row_idx as i32 + pos.y) as usize;
-        draw_cell(cell::State::Cursor, cell_col_idx, cell_row_idx, cell_size);
-    }
-}
-
-fn draw_cell(state: cell::State, col_idx: usize, row_idx: usize, cell_size: f32) {
-    #[rustfmt::skip]
-    let outline_color = match state {
-        cell::State::Empty  => Color::new(0.99, 0.99, 0.99, 1.00),
-        cell::State::Cursor => BEIGE,
-        cell::State::Stack  => GRAY,
-    };
-
-    #[rustfmt::skip]
-    let fill_color = match state {
-        cell::State::Empty  => WHITE,
-        cell::State::Cursor => BROWN,
-        cell::State::Stack  => DARKGRAY,
-    };
-
-    draw_rectangle_lines(
-        col_idx as f32 * cell_size,
-        row_idx as f32 * cell_size,
-        cell_size,
-        cell_size,
-        LINE_THICKNESS,
-        outline_color,
-    );
-
-    draw_rectangle(
-        col_idx as f32 * cell_size + LINE_THICKNESS / 2.,
-        row_idx as f32 * cell_size + LINE_THICKNESS / 2.,
-        cell_size - LINE_THICKNESS,
-        cell_size - LINE_THICKNESS,
-        fill_color,
-    );
 }

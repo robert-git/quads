@@ -1,0 +1,78 @@
+use super::board::cell;
+use super::board::cursor::piece::Piece;
+use super::board::Board;
+use macroquad::color::colors::*;
+use macroquad::color::Color;
+use macroquad::prelude::{draw_rectangle, draw_rectangle_lines};
+
+const LINE_THICKNESS: f32 = 2.0;
+
+pub struct SizeInPixels {
+    pub width: f32,
+    pub height: f32,
+}
+
+pub fn draw(board: &Board, canvas_size: SizeInPixels) {
+    let num_cols = board.num_cols();
+    let visible_rows = board.visible_rows();
+    let cell_size_from_width = canvas_size.width / num_cols as f32;
+    let cell_size_from_height = canvas_size.height / visible_rows.len() as f32;
+    let cell_size = cell_size_from_width.min(cell_size_from_height);
+    {
+        let preview_base_col: usize = num_cols + 3;
+        let preview_base_row: usize = 2;
+        draw_preview_piece(
+            board.upcoming_piece(),
+            preview_base_col,
+            preview_base_row,
+            cell_size,
+        );
+    }
+
+    for (y, row) in visible_rows.iter().enumerate() {
+        for (x, cell) in row.iter().enumerate() {
+            draw_cell(cell.state.clone(), x, y, cell_size);
+        }
+    }
+}
+
+fn draw_preview_piece(piece: &Piece, base_col_idx: usize, base_row_idx: usize, cell_size: f32) {
+    for &pos in piece.get_local_points().iter() {
+        let cell_col_idx = (base_col_idx as i32 + pos.x) as usize;
+        let cell_row_idx = (base_row_idx as i32 + pos.y) as usize;
+        draw_cell(cell::State::Cursor, cell_col_idx, cell_row_idx, cell_size);
+    }
+}
+
+fn draw_cell(state: cell::State, col_idx: usize, row_idx: usize, cell_size: f32) {
+    #[rustfmt::skip]
+    let outline_color = match state {
+        cell::State::Empty  => Color::new(0.99, 0.99, 0.99, 1.00),
+        cell::State::Cursor => BEIGE,
+        cell::State::Stack  => GRAY,
+    };
+
+    #[rustfmt::skip]
+    let fill_color = match state {
+        cell::State::Empty  => WHITE,
+        cell::State::Cursor => BROWN,
+        cell::State::Stack  => DARKGRAY,
+    };
+
+    draw_rectangle_lines(
+        col_idx as f32 * cell_size,
+        row_idx as f32 * cell_size,
+        cell_size,
+        cell_size,
+        LINE_THICKNESS,
+        outline_color,
+    );
+
+    draw_rectangle(
+        col_idx as f32 * cell_size + LINE_THICKNESS / 2.,
+        row_idx as f32 * cell_size + LINE_THICKNESS / 2.,
+        cell_size - LINE_THICKNESS,
+        cell_size - LINE_THICKNESS,
+        fill_color,
+    );
+}

@@ -1,5 +1,6 @@
 mod action;
-pub mod board;
+mod board;
+mod draw;
 mod tetromino_move;
 
 use action::to_tetromino_move;
@@ -26,7 +27,7 @@ async fn main() {
     let mut last_down_move_time = Instant::now();
     let mut opt_tetromino_move = None;
     let mut last_key_time = Instant::now();
-    let mut board = Board::new(BOARD_WIDTH, BOARD_HEIGHT);
+    let mut board = Board::new();
 
     loop {
         request_new_screen_size(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -60,7 +61,13 @@ async fn main() {
                 break;
             }
         }
-        board.draw();
+        draw::draw(
+            &board,
+            draw::SizeInPixels {
+                width: BOARD_WIDTH,
+                height: BOARD_HEIGHT,
+            },
+        );
         next_frame().await;
         opt_tetromino_move = None;
     }
