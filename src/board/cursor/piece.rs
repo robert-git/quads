@@ -121,7 +121,7 @@ impl Piece {
             local_rotation_origin,
         }
     }
-    pub fn get_local_points(&self) -> Vec<Position> {
-        Vec::new()
+    pub fn get_local_points(&self) -> &Vec<Position> {
+        &self.local_point_positions
     }
 }

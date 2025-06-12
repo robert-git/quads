@@ -38,7 +38,7 @@ impl Board {
             position: cursor_start_position,
             piece: Piece::new(),
         };
-        Self::set_state_of_cell_at_cursor(&cursor, &mut rows, cell::State::Cursor);
+        Self::set_state_of_cells_at_cursor(&cursor, &mut rows, cell::State::Cursor);
         Board {
             num_rows,
             num_cols,
@@ -48,11 +48,10 @@ impl Board {
         }
     }
 
-    fn set_state_of_cell_at_cursor(cursor: &Cursor, rows: &mut Vec<Row>, state: cell::State) {
-        Self::set_state(
-            &mut rows[cursor.position.y as usize][cursor.position.x as usize],
-            state,
-        );
+    fn set_state_of_cells_at_cursor(cursor: &Cursor, rows: &mut Vec<Row>, state: cell::State) {
+        cursor.get_point_positions().iter().for_each(|position| {
+            Self::set_state(&mut rows[position.y as usize][position.x as usize], state)
+        });
     }
 
     fn set_state(cell: &mut Cell, state: cell::State) {
@@ -107,7 +106,12 @@ impl Board {
     }
 
     fn any_is_out_of_bounds(&self, positions: &Vec<Position>) -> bool {
-        return false;
+        return positions.iter().any(|&pos| self.is_out_of_bounds(&pos));
+    }
+
+    fn is_out_of_bounds(&self, pos: &Position) -> bool {
+        let (w, h) = (&self.num_cols, &self.num_rows);
+        return pos.x < 0 || pos.x >= *w || pos.y < 0 || pos.y >= *h;
     }
 
     fn all_not_occupied_by_stack(&self, positions: &Vec<Position>) -> bool {
@@ -151,7 +155,7 @@ impl Board {
     }
 
     fn set_cursor_state(&mut self, state: cell::State) {
-        Self::set_state_of_cell_at_cursor(&self.cursor, &mut self.rows, state);
+        Self::set_state_of_cells_at_cursor(&self.cursor, &mut self.rows, state);
     }
 
     pub fn draw(&self) {
