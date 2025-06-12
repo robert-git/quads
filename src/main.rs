@@ -11,6 +11,7 @@ use tetromino_move::TetrominoMove;
 use std::time::{Duration, Instant};
 
 const DEBOUNCE: Duration = Duration::from_millis(50);
+const ROTATION_DEBOUNCE: Duration = Duration::from_millis(150);
 
 #[macroquad::main("Quads")]
 async fn main() {
@@ -64,6 +65,12 @@ fn get_user_action(last_key_time: &mut Instant) -> Option<Action> {
     for key in keys_down {
         let opt_action = to_action(key);
         if opt_action.is_some() {
+            let action = opt_action.unwrap();
+            if action == Action::RotateCW || action == Action::RotateCCW {
+                if now - *last_key_time < ROTATION_DEBOUNCE {
+                    return None;
+                }
+            }
             *last_key_time = now;
         }
         return opt_action;

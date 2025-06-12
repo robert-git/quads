@@ -16,8 +16,8 @@ use position::Position;
 type Row = Vec<Cell>;
 
 pub struct Board {
-    num_rows: i32,
-    num_cols: i32,
+    num_rows: usize,
+    num_cols: usize,
     rows: Vec<Row>,
     cursor_start_position: Position,
     cursor: Cursor,
@@ -30,11 +30,11 @@ const LINE_THICKNESS: f32 = 2.;
 impl Board {
     pub fn new() -> Self {
         rand::srand(macroquad::miniquad::date::now() as _);
-        let num_cols: i32 = 10;
-        let num_rows: i32 = 20;
-        let mut rows = vec![vec![Cell::new(); num_cols as usize]; num_rows as usize];
+        let num_cols: usize = 10;
+        let num_rows: usize = 20;
+        let mut rows = vec![vec![Cell::new(); num_cols]; num_rows];
         let cursor_start_position = Position {
-            x: (num_cols - 1) / 2,
+            x: (num_cols as i32 - 1) / 2,
             y: 0,
         };
         let cursor = Cursor {
@@ -114,8 +114,8 @@ impl Board {
     }
 
     fn is_out_of_bounds(&self, pos: &Position) -> bool {
-        let (w, h) = (&self.num_cols, &self.num_rows);
-        return pos.x < 0 || pos.x >= *w || pos.y < 0 || pos.y >= *h;
+        let (w, h) = (self.num_cols as i32, self.num_rows as i32);
+        return pos.x < 0 || pos.x >= w || pos.y < 0 || pos.y >= h;
     }
 
     fn all_not_occupied_by_stack(&self, positions: &Vec<Position>) -> bool {
@@ -140,7 +140,7 @@ impl Board {
         let orig_num_rows = self.rows.len();
         self.rows.retain(|row| is_not_a_full_row(row));
         let num_removed_rows = orig_num_rows - self.rows.len();
-        let new_rows = vec![vec![Cell::new(); self.num_cols as usize]; num_removed_rows as usize];
+        let new_rows = vec![vec![Cell::new(); self.num_cols]; num_removed_rows];
         self.rows.splice(0..0, new_rows);
     }
 
