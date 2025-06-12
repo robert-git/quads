@@ -99,11 +99,11 @@ impl Board {
     }
 
     fn fits_on_board(&self, cursor: &Cursor) -> bool {
-        let points = cursor.get_points();
-        if self.any_is_out_of_bounds(&points) {
+        let point_positions = cursor.get_point_positions();
+        if self.any_is_out_of_bounds(&point_positions) {
             return false;
         }
-        return self.all_not_occupied_by_stack(&points);
+        return self.all_not_occupied_by_stack(&point_positions);
     }
 
     fn any_is_out_of_bounds(&self, positions: &Vec<Position>) -> bool {

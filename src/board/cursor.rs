@@ -16,7 +16,7 @@ impl Cursor {
             piece: other.piece.clone(),
         }
     }
-    pub fn get_points(&self) -> Vec<Position> {
+    pub fn get_point_positions(&self) -> Vec<Position> {
         Vec::new()
     }
 }
