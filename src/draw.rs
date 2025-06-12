@@ -72,7 +72,7 @@ impl Renderer {
             let first_frame_of_current_animation =
                 num_frames_to_animate == self.animation_frames_left_to_draw;
 
-            self.animate_next_row_removal_frame();
+            self.draw_next_row_removal_animation_frame();
 
             if !first_frame_of_current_animation {
                 thread::sleep(delay_between_animated_frames);
@@ -109,7 +109,7 @@ impl Renderer {
         self.animation_row = vec![cell::Cell::new_with_state(cell::State::Stack); num_cols];
     }
 
-    fn animate_next_row_removal_frame(&mut self) {
+    fn draw_next_row_removal_animation_frame(&mut self) {
         self.first_frame_post_animation = true;
         // print_rows(
         //     &board_state.visible_rows_just_before_removal_of_full_rows,
