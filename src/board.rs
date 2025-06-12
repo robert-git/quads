@@ -63,15 +63,15 @@ impl Board {
         use crate::tetromino_move::TetrominoMove;
 
         match tetromino_move {
-            TetrominoMove::Down  => self.move_cursor_down(),
-            TetrominoMove::Left  => self.move_cursor_left(),
-            TetrominoMove::Right => self.move_cursor_right(),
+            TetrominoMove::Down  => self.try_move_cursor_down(),
+            TetrominoMove::Left  => self.try_move_cursor_left(),
+            TetrominoMove::Right => self.try_move_cursor_right(),
             TetrominoMove::RotateCW => (),
             TetrominoMove::RotateCCW => (),
         }
     }
 
-    fn move_cursor_down(&mut self) {
+    fn try_move_cursor_down(&mut self) {
         self.move_cursor(|board: &mut Board| {
             // TODO: Placeholder logic, good enough for now until I implement the collision logic:
             if board.cursor.position.y < board.num_rows - 1 {
@@ -80,7 +80,7 @@ impl Board {
         });
     }
 
-    fn move_cursor_left(&mut self) {
+    fn try_move_cursor_left(&mut self) {
         self.move_cursor(|board: &mut Board| {
             // TODO: Placeholder logic, good enough for now until I implement the collision logic:
             if board.cursor.position.x > 0 {
@@ -89,7 +89,7 @@ impl Board {
         });
     }
 
-    fn move_cursor_right(&mut self) {
+    fn try_move_cursor_right(&mut self) {
         self.move_cursor(|board: &mut Board| {
             // TODO: Placeholder logic, good enough for now until I implement the collision logic:
             if board.cursor.position.x < board.num_cols - 1 {
