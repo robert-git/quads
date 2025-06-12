@@ -15,19 +15,10 @@ pub struct SizeInPixels {
 pub fn draw(board: &Board, canvas_size: SizeInPixels) {
     let num_board_cols = board.num_cols();
     let visible_rows = board.visible_rows();
-    let cell_size_from_width = canvas_size.width / num_board_cols as f32;
-    let cell_size_from_height = canvas_size.height / visible_rows.len() as f32;
-    let cell_size = cell_size_from_width.min(cell_size_from_height);
-    {
-        let preview_base_col: usize = num_board_cols + 3;
-        let preview_base_row: usize = 2;
-        draw_preview_of_next_piece(
-            board.next_piece(),
-            preview_base_col,
-            preview_base_row,
-            cell_size,
-        );
-    }
+
+    let cell_size = calc_cell_size_in_pixels(canvas_size, num_board_cols, visible_rows.len());
+
+    draw_preview_of_next_piece(board.next_piece(), num_board_cols, cell_size);
 
     for (y, row) in visible_rows.iter().enumerate() {
         for (x, cell) in row.iter().enumerate() {
@@ -36,7 +27,15 @@ pub fn draw(board: &Board, canvas_size: SizeInPixels) {
     }
 }
 
-fn draw_preview_of_next_piece(piece: &Piece, base_col_idx: usize, base_row_idx: usize, cell_size: f32) {
+fn calc_cell_size_in_pixels(canvas_size: SizeInPixels, num_board_cols: usize, num_visible_board_rows: usize) -> f32 {
+    let cell_size_from_width = canvas_size.width / num_board_cols as f32;
+    let cell_size_from_height = canvas_size.height / num_visible_board_rows as f32;
+    cell_size_from_width.min(cell_size_from_height)
+}
+
+fn draw_preview_of_next_piece(piece: &Piece, num_board_cols: usize, cell_size: f32) {
+    let base_col_idx: usize = num_board_cols + 3;
+    let base_row_idx: usize = 2;
     for &pos in piece.get_local_points().iter() {
         let cell_col_idx = (base_col_idx as i32 + pos.x) as usize;
         let cell_row_idx = (base_row_idx as i32 + pos.y) as usize;
