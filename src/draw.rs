@@ -3,7 +3,10 @@ use super::board::cursor::piece::Piece;
 use super::board::Board;
 use macroquad::color::colors::*;
 use macroquad::color::Color;
-use macroquad::prelude::{draw_rectangle, draw_rectangle_lines, draw_text};
+use macroquad::prelude::{
+    clear_background, draw_rectangle, draw_rectangle_lines, draw_text, measure_text, screen_height,
+    screen_width,
+};
 
 const LINE_THICKNESS: f32 = 2.0;
 
@@ -94,4 +97,37 @@ fn draw_cell(state: cell::State, col_idx: usize, row_idx: usize, cell_size: f32)
         cell_size - LINE_THICKNESS,
         fill_color,
     );
+}
+
+pub fn draw_game_over_screen(board: &Board) {
+    clear_background(WHITE);
+
+    let font_size = 30.0;
+
+    let y_base = screen_height() / 2.0;
+    let final_score = board.score();
+    let lines = vec![
+        String::from("Game Over. Press [enter] to play again."),
+        format!("Final score: {final_score}"),
+        String::from("(High Score:)"),
+    ];
+
+    let opt_tallest_line = lines.iter().max_by_key(|line| {
+        let dimensions = measure_text(line, None, font_size as _, 1.0);
+        dimensions.height as i32
+    });
+    let size_of_tallest_line = measure_text(opt_tallest_line.unwrap(), None, font_size as _, 1.0);
+    let line_spacing = size_of_tallest_line.height * 1.5;
+
+    for (i, text) in lines.iter().enumerate() {
+        let text_size = measure_text(text, None, font_size as _, 1.0);
+        draw_text(
+            text,
+            screen_width() / 2. - text_size.width / 2.,
+            y_base + (i as f32 * line_spacing) + line_spacing / 2.,
+            font_size,
+            DARKGRAY,
+        );
+    }
+    println!("---");
 }
