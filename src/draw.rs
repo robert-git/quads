@@ -13,13 +13,13 @@ pub struct SizeInPixels {
 }
 
 pub fn draw(board: &Board, canvas_size: SizeInPixels) {
-    let num_cols = board.num_cols();
+    let num_board_cols = board.num_cols();
     let visible_rows = board.visible_rows();
-    let cell_size_from_width = canvas_size.width / num_cols as f32;
+    let cell_size_from_width = canvas_size.width / num_board_cols as f32;
     let cell_size_from_height = canvas_size.height / visible_rows.len() as f32;
     let cell_size = cell_size_from_width.min(cell_size_from_height);
     {
-        let preview_base_col: usize = num_cols + 3;
+        let preview_base_col: usize = num_board_cols + 3;
         let preview_base_row: usize = 2;
         draw_preview_of_next_piece(
             board.next_piece(),
