@@ -50,7 +50,7 @@ impl Board {
             position: cursor_start_position,
             piece: Piece::new(Shape::O),
         };
-        Self::set_state_of_cells_at_cursor(&cursor, &mut rows, cell::State::Cursor);
+        set_state_of_cells_at_cursor(&cursor, &mut rows, cell::State::Cursor);
         let next_shape_candidates = vec![
             Shape::O,
             Shape::I,
@@ -72,21 +72,11 @@ impl Board {
         }
     }
 
-    fn set_state_of_cells_at_cursor(cursor: &Cursor, rows: &mut Vec<Row>, state: cell::State) {
-        cursor.get_point_positions().iter().for_each(|position| {
-            Self::set_state(&mut rows[position.y as usize][position.x as usize], state)
-        });
-    }
-
-    fn set_state(cell: &mut Cell, state: cell::State) {
-        cell.state = state;
-    }
-
     #[must_use]
     pub fn update(&mut self, tetromino_move: TetrominoMove) -> ToppedOut {
         let mut topped_out: ToppedOut = false;
 
-        let new_cursor = Self::calc_new_cursor_pos_and_orientation(&self.cursor, tetromino_move);
+        let new_cursor = calc_new_cursor_pos_and_orientation(&self.cursor, tetromino_move);
 
         if self.fits_on_board(&new_cursor) {
             self.set_cell_states_at_cursor(cell::State::Empty);
@@ -101,20 +91,6 @@ impl Board {
             }
         }
         topped_out
-    }
-
-    #[rustfmt::skip]
-    fn calc_new_cursor_pos_and_orientation(curr: &Cursor, tetromino_move: TetrominoMove) -> Cursor {
-        let curr_pos = curr.position;
-        let cur_x = curr_pos.x;
-        let cur_y = curr_pos.y;
-        match tetromino_move {
-            TetrominoMove::Down  => return curr.offset_copy(Position {x: cur_x    , y: cur_y + 1}),
-            TetrominoMove::Left  => return curr.offset_copy(Position {x: cur_x - 1, y: cur_y}),
-            TetrominoMove::Right => return curr.offset_copy(Position {x: cur_x + 1, y: cur_y}),
-            TetrominoMove::RotateCW  => return curr.rotate_cw_copy(),
-            TetrominoMove::RotateCCW => return curr.rotate_ccw_copy(),
-        }
     }
 
     fn fits_on_board(&self, cursor: &Cursor) -> bool {
@@ -145,7 +121,7 @@ impl Board {
             .get_point_positions()
             .iter()
             .for_each(|position| {
-                Self::set_state(
+                set_state(
                     &mut self.rows[position.y as usize][position.x as usize],
                     cell::State::Stack,
                 )
@@ -183,7 +159,7 @@ impl Board {
     }
 
     fn set_cell_states_at_cursor(&mut self, state: cell::State) {
-        Self::set_state_of_cells_at_cursor(&self.cursor, &mut self.rows, state);
+        set_state_of_cells_at_cursor(&self.cursor, &mut self.rows, state);
     }
 
     pub fn draw(&self) {
@@ -200,6 +176,30 @@ impl Board {
 
 fn random_shape(shape_list: &Vec<Shape>) -> Shape {
     shape_list[rand::gen_range(0, shape_list.len())]
+}
+
+#[rustfmt::skip]
+fn calc_new_cursor_pos_and_orientation(curr: &Cursor, tetromino_move: TetrominoMove) -> Cursor {
+    let curr_pos = curr.position;
+    let cur_x = curr_pos.x;
+    let cur_y = curr_pos.y;
+    match tetromino_move {
+        TetrominoMove::Down  => return curr.offset_copy(Position {x: cur_x    , y: cur_y + 1}),
+        TetrominoMove::Left  => return curr.offset_copy(Position {x: cur_x - 1, y: cur_y}),
+        TetrominoMove::Right => return curr.offset_copy(Position {x: cur_x + 1, y: cur_y}),
+        TetrominoMove::RotateCW  => return curr.rotate_cw_copy(),
+        TetrominoMove::RotateCCW => return curr.rotate_ccw_copy(),
+    }
+}
+
+fn set_state_of_cells_at_cursor(cursor: &Cursor, rows: &mut Vec<Row>, state: cell::State) {
+    cursor.get_point_positions().iter().for_each(|position| {
+        set_state(&mut rows[position.y as usize][position.x as usize], state)
+    });
+}
+
+fn set_state(cell: &mut Cell, state: cell::State) {
+    cell.state = state;
 }
 
 fn is_not_a_full_row(row: &Row) -> bool {
