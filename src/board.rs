@@ -96,8 +96,8 @@ impl Board {
             TetrominoMove::Down  => return curr.offset_copy(Position {x: cur_x    , y: cur_y + 1}),
             TetrominoMove::Left  => return curr.offset_copy(Position {x: cur_x - 1, y: cur_y}),
             TetrominoMove::Right => return curr.offset_copy(Position {x: cur_x + 1, y: cur_y}),
-            TetrominoMove::RotateCW => return curr.clone(),
-            TetrominoMove::RotateCCW => return curr.clone(),
+            TetrominoMove::RotateCW  => return curr.rotate_cw_copy(),
+            TetrominoMove::RotateCCW => return curr.rotate_ccw_copy(),
         }
     }
 
