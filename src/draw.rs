@@ -33,7 +33,7 @@ type DisplayRow = Vec<CellDisplayState>;
 #[derive(Clone)]
 struct BoardState {
     num_cols: usize,
-    visible_rows: Vec<DisplayRow>,
+    latest_visible_rows: Vec<DisplayRow>,
     visible_rows_just_before_removal_of_full_rows: Vec<DisplayRow>,
     next_piece: cursor::piece::Piece,
     score: i32,
@@ -211,7 +211,7 @@ fn get_board_state(board: &Board) -> BoardState {
     let num_hidden_rows = board.num_hidden_rows();
     BoardState {
         num_cols,
-        visible_rows,
+        latest_visible_rows: visible_rows,
         visible_rows_just_before_removal_of_full_rows,
         next_piece,
         score,
@@ -265,7 +265,7 @@ fn draw_helper(
 ) {
     let num_board_cols = board_state.num_cols;
     let visible_rows = match draw_mode {
-        DrawMode::NotAnimatingRowRemoval => &board_state.visible_rows,
+        DrawMode::NotAnimatingRowRemoval => &board_state.latest_visible_rows,
         DrawMode::AnimatingRowRemoval => &board_state.visible_rows_just_before_removal_of_full_rows,
     };
 
