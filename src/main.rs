@@ -1,10 +1,12 @@
 mod action;
 mod tetromino_move;
+mod board;
 
 use macroquad::prelude::*;
 use tetromino_move::TetrominoMove;
 use action::Action;
 use action::to_tetromino_move;
+use board::Board;
 
 use std::collections::LinkedList;
 use std::time::{Duration, Instant};
@@ -28,6 +30,7 @@ async fn main() {
     let mut tetromino_move = TetrominoMove::Down;
 
     let mut last_key_time = Instant::now();
+    let mut board = Board::new();
 
     while run {
         let opt_user_action = get_user_action(&mut last_key_time);
@@ -55,6 +58,7 @@ async fn main() {
             println!("Auto down");
         }
 
+        board.update( &tetromino_move );
         next_frame().await;
     }
     #[cfg(feature = "")]
