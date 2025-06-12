@@ -7,7 +7,7 @@ use board::Board;
 use draw::Renderer;
 use macroquad::color::colors::LIGHTGRAY;
 use macroquad::prelude::{
-    clear_background, get_keys_down, get_keys_pressed, is_key_down, next_frame,
+    clear_background, get_keys_down, get_keys_pressed, is_key_pressed, next_frame,
     request_new_screen_size, screen_height, screen_width, KeyCode,
 };
 use std::time::{Duration, Instant};
@@ -29,14 +29,14 @@ async fn main() {
 
     let mut renderer = Renderer::new(&canvas_size);
 
-    loop {
+    while !gp.exit_game {
         if renderer.drawing_row_removal_animation() {
             clear_background(LIGHTGRAY);
             renderer.draw(&mut gp.board);
         } else {
             if gp.game_over {
                 renderer.draw_game_over_screen(&gp.board);
-                reset_game_when_apt(&mut gp);
+                reset_or_quit_game_when_apt(&mut gp);
             } else {
                 request_new_screen_size(canvas_size.width, canvas_size.height);
                 clear_background(LIGHTGRAY);
@@ -116,6 +116,7 @@ struct GameParams {
     last_key_time: Instant,
     board: Board,
     game_over: bool,
+    exit_game: bool,
 }
 
 fn initialize_game() -> GameParams {
@@ -125,6 +126,7 @@ fn initialize_game() -> GameParams {
     let last_key_time = Instant::now();
     let board = Board::new();
     let game_over = false;
+    let exit_game = false;
     GameParams {
         auto_drop_interval,
         last_down_move_time,
@@ -132,12 +134,15 @@ fn initialize_game() -> GameParams {
         last_key_time,
         board,
         game_over,
+        exit_game,
     }
 }
 
-fn reset_game_when_apt(gp: &mut GameParams) {
-    if is_key_down(KeyCode::Enter) {
+fn reset_or_quit_game_when_apt(gp: &mut GameParams) {
+    if is_key_pressed(KeyCode::Enter) {
         *gp = initialize_game();
+    } else if is_key_pressed(KeyCode::Q) {
+        gp.exit_game = true;
     }
 }
 
