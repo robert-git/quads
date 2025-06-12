@@ -4,7 +4,6 @@ mod tetromino_move;
 use macroquad::prelude::*;
 use tetromino_move::TetrominoMove;
 use action::Action;
-use action::to_tetromino_move;
 
 use std::collections::LinkedList;
 use std::time::{Duration, Instant};
@@ -39,7 +38,7 @@ async fn main() {
             if action == Action::Quit {
                 run = false;
             } else {
-                let opt_tetromino_move = to_tetromino_move(action);
+                let opt_tetromino_move = action.to_tetromino_move();
                 if opt_tetromino_move.is_some() {
                     tetromino_move = opt_tetromino_move.unwrap();
                     if tetromino_move == TetrominoMove::Down {

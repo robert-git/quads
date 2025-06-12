@@ -10,13 +10,15 @@ pub enum Action {
     Quit,
 }
 
-pub fn to_tetromino_move(action: Action) -> Option<TetrominoMove> {
-    match action {
-        Action::Down      => Some(TetrominoMove::Down),
-        Action::Left      => Some(TetrominoMove::Left),
-        Action::Right     => Some(TetrominoMove::Right),
-        Action::RotateCW  => Some(TetrominoMove::RotateCW),
-        Action::RotateCCW => Some(TetrominoMove::RotateCCW),
-        _                 => None,
+impl Action {
+    pub fn to_tetromino_move(&self) -> Option<TetrominoMove> {
+        match self {
+            Action::Down      => Some(TetrominoMove::Down),
+            Action::Left      => Some(TetrominoMove::Left),
+            Action::Right     => Some(TetrominoMove::Right),
+            Action::RotateCW  => Some(TetrominoMove::RotateCW),
+            Action::RotateCCW => Some(TetrominoMove::RotateCCW),
+            _                 => None,
+        }
     }
 }
