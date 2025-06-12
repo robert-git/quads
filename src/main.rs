@@ -33,6 +33,7 @@ async fn main() {
         } else {
             request_new_screen_size(WINDOW_WIDTH, WINDOW_HEIGHT);
             clear_background(LIGHTGRAY);
+
             let opt_user_action = get_user_action(&mut gp.last_key_time);
 
             let now = Instant::now();
@@ -57,12 +58,14 @@ async fn main() {
                     }
                 }
             }
+
             if gp.opt_tetromino_move.is_some() {
                 let topped_out = gp.board.update(gp.opt_tetromino_move.unwrap());
                 if topped_out {
                     gp.game_over = true;
                 }
             }
+
             draw::draw(
                 &gp.board,
                 draw::SizeInPixels {
@@ -70,6 +73,7 @@ async fn main() {
                     height: BOARD_HEIGHT,
                 },
             );
+
             gp.opt_tetromino_move = None;
         }
 
