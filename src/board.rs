@@ -81,7 +81,7 @@ impl Board {
         } else {
             if tetromino_move == TetrominoMove::Down {
                 self.dock_cursor_to_stack();
-                //RemoveFullRowsFromStack();
+                self.remove_full_rows_from_stack();
                 self.drop_new_piece();
             }
         }
@@ -136,6 +136,14 @@ impl Board {
             });
     }
 
+    fn remove_full_rows_from_stack(&mut self) {
+        let orig_num_rows = self.rows.len();
+        self.rows.retain(|row| is_not_a_full_row(row));
+        let num_removed_rows = orig_num_rows - self.rows.len();
+        let new_rows = vec![vec![Cell::new(); self.num_cols as usize]; num_removed_rows as usize];
+        self.rows.splice(0..0, new_rows);
+    }
+
     fn drop_new_piece(&mut self) {
         let shape =
             self.next_shape_candidates[rand::gen_range(0, self.next_shape_candidates.len())];
@@ -164,6 +172,14 @@ impl Board {
             }
         }
     }
+}
+
+fn is_not_a_full_row(row: &Row) -> bool {
+    return !is_a_full_row(&row);
+}
+
+fn is_a_full_row(row: &Row) -> bool {
+    return row.iter().all(|&cell| cell.state == cell::State::Stack);
 }
 
 fn draw_cell(state: &cell::State, x: usize, y: usize) {
