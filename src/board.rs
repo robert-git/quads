@@ -38,19 +38,10 @@ impl Board {
 
         let cell_size_from_width = max_width / num_cols as f32;
         let cell_size_from_height = max_height / num_visible_rows as f32;
-
         let cell_size = cell_size_from_width.min(cell_size_from_height);
 
         let mut rows = vec![vec![Cell::new(); num_cols]; num_total_rows];
-        let cursor_start_position = Position {
-            x: (num_cols as i32 - 1) / 2,
-            y: 0,
-        };
-        let cursor = Cursor {
-            position: cursor_start_position,
-            piece: Piece::new(Shape::O),
-        };
-        set_state_of_cells_at_cursor(&cursor, &mut rows, cell::State::Cursor);
+
         let next_shape_candidates = vec![
             Shape::O,
             Shape::I,
@@ -60,6 +51,17 @@ impl Board {
             Shape::J,
             Shape::L,
         ];
+
+        let cursor_start_position = Position {
+            x: (num_cols as i32 - 1) / 2,
+            y: 0,
+        };
+        let cursor = Cursor {
+            position: cursor_start_position,
+            piece: Piece::new(random_shape(&next_shape_candidates)),
+        };
+        set_state_of_cells_at_cursor(&cursor, &mut rows, cell::State::Cursor);
+
         Board {
             num_visible_rows,
             num_total_rows,
@@ -193,9 +195,10 @@ fn calc_new_cursor_pos_and_orientation(curr: &Cursor, tetromino_move: TetrominoM
 }
 
 fn set_state_of_cells_at_cursor(cursor: &Cursor, rows: &mut Vec<Row>, state: cell::State) {
-    cursor.get_point_positions().iter().for_each(|position| {
-        set_state(&mut rows[position.y as usize][position.x as usize], state)
-    });
+    cursor
+        .get_point_positions()
+        .iter()
+        .for_each(|position| set_state(&mut rows[position.y as usize][position.x as usize], state));
 }
 
 fn set_state(cell: &mut Cell, state: cell::State) {
