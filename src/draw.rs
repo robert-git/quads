@@ -122,10 +122,10 @@ fn draw_ghost_cursor_cell(position: &Position, num_hidden_board_rows: usize, cel
     
     let outline_color = BEIGE;
     draw_rectangle_lines(
-        col_idx as f32 * cell_size,
-        row_idx as f32 * cell_size,
-        cell_size,
-        cell_size,
+        col_idx as f32 * cell_size + LINE_THICKNESS / 4.0,
+        row_idx as f32 * cell_size + LINE_THICKNESS / 4.0,
+        cell_size - LINE_THICKNESS / 2.0,
+        cell_size - LINE_THICKNESS / 2.0,
         LINE_THICKNESS,
         outline_color,
     );
