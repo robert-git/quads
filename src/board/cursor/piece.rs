@@ -163,8 +163,10 @@ fn rotate_90_deg(piece: &Piece, dir: RotationDir) -> Piece {
         RotationDir::Counterclockwise => negate_ys(&mut float_points_centered_at_origin),
     }
 
-    let local_point_positions =
-        offset_from_center(&float_points_centered_at_origin, &piece.local_rotation_origin);
+    let local_point_positions = offset_from_center(
+        &float_points_centered_at_origin,
+        &piece.local_rotation_origin,
+    );
 
     piece.from(local_point_positions)
 }

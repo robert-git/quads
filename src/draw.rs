@@ -27,7 +27,11 @@ pub fn draw(board: &Board, canvas_size: SizeInPixels) {
     }
 }
 
-fn calc_cell_size_in_pixels(canvas_size: SizeInPixels, num_board_cols: usize, num_visible_board_rows: usize) -> f32 {
+fn calc_cell_size_in_pixels(
+    canvas_size: SizeInPixels,
+    num_board_cols: usize,
+    num_visible_board_rows: usize,
+) -> f32 {
     let cell_size_from_width = canvas_size.width / num_board_cols as f32;
     let cell_size_from_height = canvas_size.height / num_visible_board_rows as f32;
     cell_size_from_width.min(cell_size_from_height)
