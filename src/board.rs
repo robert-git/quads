@@ -98,9 +98,9 @@ impl Board {
         });
     }
 
-    fn move_cursor<UpdatePosition>(&mut self, mut update_position: UpdatePosition)
+    fn move_cursor<UpdateCursorPosition>(&mut self, mut update_cursor_pos: UpdateCursorPosition)
     where
-        UpdatePosition: FnMut(&mut Self),
+        UpdateCursorPosition: FnMut(&mut Self),
     {
         {
             let mut cell =
@@ -108,7 +108,7 @@ impl Board {
             Self::set_state(&mut cell, cell::State::Empty);
         }
 
-        update_position(self);
+        update_cursor_pos(self);
 
         let mut cell =
             &mut self.rows[self.cursor.position.y as usize][self.cursor.position.x as usize];
