@@ -40,25 +40,21 @@ async fn main() {
             request_new_screen_size(canvas_size.width, canvas_size.height);
             clear_background(LIGHTGRAY);
 
-            let opt_user_action = get_user_action(&mut gp.last_key_time);
-
             let now = Instant::now();
             if now - gp.last_down_move_time > gp.auto_drop_interval {
                 gp.opt_tetromino_move = Some(TetrominoMove::AutoDown);
                 gp.last_down_move_time = now;
                 println!("Auto down");
-            } else {
-                if let Some(action) = opt_user_action {
-                    if action == UserAction::Quit {
-                        gp.game_over = true;
-                    } else {
-                        gp.opt_tetromino_move = to_tetromino_move(action);
-                        if let Some(tetromino_move) = gp.opt_tetromino_move {
-                            if tetromino_move == TetrominoMove::UserSoftDown {
-                                gp.last_down_move_time = now;
-                            }
-                            println!("tetromino_move {:?}", tetromino_move);
+            } else if let Some(action) = get_user_action(&mut gp.last_key_time) {
+                if action == UserAction::Quit {
+                    gp.game_over = true;
+                } else {
+                    gp.opt_tetromino_move = to_tetromino_move(action);
+                    if let Some(tetromino_move) = gp.opt_tetromino_move {
+                        if tetromino_move == TetrominoMove::UserSoftDown {
+                            gp.last_down_move_time = now;
                         }
+                        println!("tetromino_move {:?}", tetromino_move);
                     }
                 }
             }
