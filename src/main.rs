@@ -45,7 +45,7 @@ async fn main() {
                 gp.opt_tetromino_move = Some(TetrominoMove::AutoDown);
                 gp.last_down_move_time = now;
                 println!("Auto down");
-            } else if let Some(action) = get_user_action(&mut gp.last_key_time) {
+            } else if let Some(action) = get_user_action(now, &mut gp.last_key_time) {
                 if action == UserAction::Quit {
                     gp.game_over = true;
                 } else {
@@ -111,10 +111,11 @@ struct GameParams {
 }
 
 fn initialize_game() -> GameParams {
+    let now = Instant::now();
     let auto_drop_interval = Duration::from_millis(2000);
-    let last_down_move_time = Instant::now();
+    let last_down_move_time = now;
     let opt_tetromino_move = None;
-    let last_key_time = Instant::now();
+    let last_key_time = now;
     let board = Board::new();
     let game_over = false;
     let exit_game = false;
@@ -143,8 +144,7 @@ fn scale_duration(duration: Duration, scale_factor: f64) -> Duration {
     Duration::from_millis(new_total_millis.round() as u64)
 }
 
-fn get_user_action(last_key_time: &mut Instant) -> Option<UserAction> {
-    let now = Instant::now();
+fn get_user_action(now: Instant, last_key_time: &mut Instant) -> Option<UserAction> {
     if now - *last_key_time < INPUT_DEBOUNCE {
         return None;
     }
