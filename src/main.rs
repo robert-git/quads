@@ -49,14 +49,12 @@ async fn main() {
                     gp.last_down_move_time = now;
                     println!("Auto down");
                 } else {
-                    if opt_user_action.is_some() {
-                        let action = opt_user_action.unwrap();
+                    if let Some(action) = opt_user_action {
                         if action == UserAction::Quit {
                             gp.game_over = true;
                         } else {
                             gp.opt_tetromino_move = to_tetromino_move(action);
-                            if gp.opt_tetromino_move.is_some() {
-                                let tetromino_move = gp.opt_tetromino_move.unwrap();
+                            if let Some(tetromino_move) = gp.opt_tetromino_move {
                                 if tetromino_move == TetrominoMove::UserSoftDown {
                                     gp.last_down_move_time = now;
                                 }
@@ -66,9 +64,9 @@ async fn main() {
                     }
                 }
 
-                if gp.opt_tetromino_move.is_some() {
+                if let Some(tetromino_move) = gp.opt_tetromino_move {
                     let (topped_out, num_rows_cleared_this_update) =
-                        gp.board.update(gp.opt_tetromino_move.unwrap());
+                        gp.board.update(tetromino_move);
                     if topped_out {
                         gp.game_over = true;
                     }
@@ -177,8 +175,8 @@ fn get_user_action(last_key_time: &mut Instant) -> Option<UserAction> {
 
         for key in keys_pressed {
             let opt_action = non_autorepeat_key_to_action(key);
-            if opt_action.is_some() {
-                println!("action = {:?}", opt_action.unwrap());
+            if let Some(action) = opt_action {
+                println!("action = {:?}", action);
                 *last_key_time = now;
                 return opt_action;
             }
