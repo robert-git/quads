@@ -33,54 +33,51 @@ async fn main() {
         if renderer.drawing_row_removal_animation() {
             clear_background(LIGHTGRAY);
             renderer.draw(&mut gp.board);
+        } else if gp.game_over {
+            renderer.draw_game_over_screen(&gp.board);
+            reset_or_quit_game_when_apt(&mut gp);
         } else {
-            if gp.game_over {
-                renderer.draw_game_over_screen(&gp.board);
-                reset_or_quit_game_when_apt(&mut gp);
+            request_new_screen_size(canvas_size.width, canvas_size.height);
+            clear_background(LIGHTGRAY);
+
+            let opt_user_action = get_user_action(&mut gp.last_key_time);
+
+            let now = Instant::now();
+            if now - gp.last_down_move_time > gp.auto_drop_interval {
+                gp.opt_tetromino_move = Some(TetrominoMove::AutoDown);
+                gp.last_down_move_time = now;
+                println!("Auto down");
             } else {
-                request_new_screen_size(canvas_size.width, canvas_size.height);
-                clear_background(LIGHTGRAY);
-
-                let opt_user_action = get_user_action(&mut gp.last_key_time);
-
-                let now = Instant::now();
-                if now - gp.last_down_move_time > gp.auto_drop_interval {
-                    gp.opt_tetromino_move = Some(TetrominoMove::AutoDown);
-                    gp.last_down_move_time = now;
-                    println!("Auto down");
-                } else {
-                    if let Some(action) = opt_user_action {
-                        if action == UserAction::Quit {
-                            gp.game_over = true;
-                        } else {
-                            gp.opt_tetromino_move = to_tetromino_move(action);
-                            if let Some(tetromino_move) = gp.opt_tetromino_move {
-                                if tetromino_move == TetrominoMove::UserSoftDown {
-                                    gp.last_down_move_time = now;
-                                }
-                                println!("tetromino_move {:?}", tetromino_move);
+                if let Some(action) = opt_user_action {
+                    if action == UserAction::Quit {
+                        gp.game_over = true;
+                    } else {
+                        gp.opt_tetromino_move = to_tetromino_move(action);
+                        if let Some(tetromino_move) = gp.opt_tetromino_move {
+                            if tetromino_move == TetrominoMove::UserSoftDown {
+                                gp.last_down_move_time = now;
                             }
+                            println!("tetromino_move {:?}", tetromino_move);
                         }
                     }
                 }
-
-                if let Some(tetromino_move) = gp.opt_tetromino_move {
-                    let (topped_out, num_rows_cleared_this_update) =
-                        gp.board.update(tetromino_move);
-                    if topped_out {
-                        gp.game_over = true;
-                    }
-                    total_rows_cleared += num_rows_cleared_this_update;
-                    if total_rows_cleared >= next_row_thresh_for_speedup {
-                        next_row_thresh_for_speedup += next_row_thresh_for_speedup;
-                        gp.auto_drop_interval = scale_duration(gp.auto_drop_interval, 0.5);
-                    }
-                }
-
-                renderer.draw(&mut gp.board);
-
-                gp.opt_tetromino_move = None;
             }
+
+            if let Some(tetromino_move) = gp.opt_tetromino_move {
+                let (topped_out, num_rows_cleared_this_update) = gp.board.update(tetromino_move);
+                if topped_out {
+                    gp.game_over = true;
+                }
+                total_rows_cleared += num_rows_cleared_this_update;
+                if total_rows_cleared >= next_row_thresh_for_speedup {
+                    next_row_thresh_for_speedup += next_row_thresh_for_speedup;
+                    gp.auto_drop_interval = scale_duration(gp.auto_drop_interval, 0.5);
+                }
+            }
+
+            renderer.draw(&mut gp.board);
+
+            gp.opt_tetromino_move = None;
         }
 
         next_frame().await;
