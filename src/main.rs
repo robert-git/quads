@@ -94,9 +94,9 @@ fn get_window_dims(requested_width: f32, requested_height: f32) -> draw::SizeInP
     };
 
     if size_based_on_max_possible_height.height < size_based_on_max_possible_width.height {
-        return size_based_on_max_possible_height;
+        size_based_on_max_possible_height
     } else {
-        return size_based_on_max_possible_width;
+        size_based_on_max_possible_width
     }
 }
 
