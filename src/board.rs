@@ -155,10 +155,10 @@ impl Board {
     }
 
     fn cursor_cells_fit_on_board(&self, cursor_cell_positions: &Vec<Position>) -> bool {
-        if self.any_is_out_of_bounds(&cursor_cell_positions) {
+        if self.any_is_out_of_bounds(cursor_cell_positions) {
             return false;
         }
-        return self.all_not_occupied_by_stack(&cursor_cell_positions);
+        return self.all_not_occupied_by_stack(cursor_cell_positions);
     }
 
     fn any_is_out_of_bounds(&self, positions: &Vec<Position>) -> bool {
@@ -353,7 +353,7 @@ fn set_state(cell: &mut Cell, state: cell::State) {
 }
 
 fn is_not_a_full_row(row: &Row) -> bool {
-    return !is_a_full_row(&row);
+    return !is_a_full_row(row);
 }
 
 fn is_a_full_row(row: &Row) -> bool {
