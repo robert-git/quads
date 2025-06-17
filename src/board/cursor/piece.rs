@@ -16,83 +16,69 @@ impl Shape {
         type RotationOrigin = FloatPosition;
         type P = Position;
         match self {
-            Shape::O => {
-                return (
-                    RotationOrigin { x: 0.5, y: 0.5 },
-                    vec![
-                        P { x: 0, y: 0 },
-                        P { x: 0, y: 1 },
-                        P { x: 1, y: 0 },
-                        P { x: 1, y: 1 },
-                    ],
-                )
-            }
-            Shape::I => {
-                return (
-                    RotationOrigin { x: -0.5, y: 0.5 },
-                    vec![
-                        P { x: -2, y: 0 },
-                        P { x: -1, y: 0 },
-                        P { x: 0, y: 0 },
-                        P { x: 1, y: 0 },
-                    ],
-                )
-            }
-            Shape::T => {
-                return (
-                    RotationOrigin { x: 0.0, y: 1.0 },
-                    vec![
-                        P { x: 0, y: 1 },
-                        P { x: -1, y: 1 },
-                        P { x: 1, y: 1 },
-                        P { x: 0, y: 0 },
-                    ],
-                )
-            }
-            Shape::S => {
-                return (
-                    RotationOrigin { x: 0.0, y: 1.0 },
-                    vec![
-                        P { x: -1, y: 1 },
-                        P { x: 0, y: 1 },
-                        P { x: 0, y: 0 },
-                        P { x: 1, y: 0 },
-                    ],
-                )
-            }
-            Shape::Z => {
-                return (
-                    RotationOrigin { x: 0.0, y: 1.0 },
-                    vec![
-                        P { x: -1, y: 0 },
-                        P { x: 0, y: 0 },
-                        P { x: 0, y: 1 },
-                        P { x: 1, y: 1 },
-                    ],
-                )
-            }
-            Shape::J => {
-                return (
-                    RotationOrigin { x: 0.0, y: 1.0 },
-                    vec![
-                        P { x: -1, y: 0 },
-                        P { x: -1, y: 1 },
-                        P { x: 0, y: 1 },
-                        P { x: 1, y: 1 },
-                    ],
-                )
-            }
-            Shape::L => {
-                return (
-                    RotationOrigin { x: 0.0, y: 1.0 },
-                    vec![
-                        P { x: -1, y: 1 },
-                        P { x: 0, y: 1 },
-                        P { x: 1, y: 1 },
-                        P { x: 1, y: 0 },
-                    ],
-                )
-            }
+            Shape::O => (
+                RotationOrigin { x: 0.5, y: 0.5 },
+                vec![
+                    P { x: 0, y: 0 },
+                    P { x: 0, y: 1 },
+                    P { x: 1, y: 0 },
+                    P { x: 1, y: 1 },
+                ],
+            ),
+            Shape::I => (
+                RotationOrigin { x: -0.5, y: 0.5 },
+                vec![
+                    P { x: -2, y: 0 },
+                    P { x: -1, y: 0 },
+                    P { x: 0, y: 0 },
+                    P { x: 1, y: 0 },
+                ],
+            ),
+            Shape::T => (
+                RotationOrigin { x: 0.0, y: 1.0 },
+                vec![
+                    P { x: 0, y: 1 },
+                    P { x: -1, y: 1 },
+                    P { x: 1, y: 1 },
+                    P { x: 0, y: 0 },
+                ],
+            ),
+            Shape::S => (
+                RotationOrigin { x: 0.0, y: 1.0 },
+                vec![
+                    P { x: -1, y: 1 },
+                    P { x: 0, y: 1 },
+                    P { x: 0, y: 0 },
+                    P { x: 1, y: 0 },
+                ],
+            ),
+            Shape::Z => (
+                RotationOrigin { x: 0.0, y: 1.0 },
+                vec![
+                    P { x: -1, y: 0 },
+                    P { x: 0, y: 0 },
+                    P { x: 0, y: 1 },
+                    P { x: 1, y: 1 },
+                ],
+            ),
+            Shape::J => (
+                RotationOrigin { x: 0.0, y: 1.0 },
+                vec![
+                    P { x: -1, y: 0 },
+                    P { x: -1, y: 1 },
+                    P { x: 0, y: 1 },
+                    P { x: 1, y: 1 },
+                ],
+            ),
+            Shape::L => (
+                RotationOrigin { x: 0.0, y: 1.0 },
+                vec![
+                    P { x: -1, y: 1 },
+                    P { x: 0, y: 1 },
+                    P { x: 1, y: 1 },
+                    P { x: 1, y: 0 },
+                ],
+            ),
         }
     }
 }
@@ -209,5 +195,5 @@ fn offset_from_center(
 }
 
 fn round_to_nearest_half(x: f64) -> f64 {
-    return (x * 2.0).round() / 2.0;
+    (x * 2.0).round() / 2.0
 }
