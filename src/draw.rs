@@ -433,7 +433,7 @@ impl Renderer {
         let y_base = screen_height() / 2.0;
         let final_score = board.score();
         let high_score = board.high_score();
-        let lines = vec![
+        let lines = [
             String::from("Game Over"),
             format!("Final score: {final_score}"),
             format!("High score: {high_score}"),
