@@ -42,7 +42,7 @@ impl Cursor {
 
     pub fn get_point_positions(&self) -> Vec<Position> {
         let local_points = self.piece.get_local_points().clone();
-        return offset_points_by_position(local_points, &self.position);
+        offset_points_by_position(local_points, &self.position)
     }
 }
 
