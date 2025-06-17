@@ -28,14 +28,14 @@ impl Cursor {
 
     pub fn rotate_cw_copy(&self) -> Cursor {
         Cursor {
-            position: self.position.clone(),
+            position: self.position,
             piece: self.piece.rotate_cw_copy(),
         }
     }
 
     pub fn rotate_ccw_copy(&self) -> Cursor {
         Cursor {
-            position: self.position.clone(),
+            position: self.position,
             piece: self.piece.rotate_ccw_copy(),
         }
     }
