@@ -151,14 +151,14 @@ impl Board {
 
     fn fits_on_board(&self, cursor: &Cursor) -> bool {
         let point_positions = cursor.get_point_positions();
-        return self.cursor_cells_fit_on_board(&point_positions);
+        self.cursor_cells_fit_on_board(&point_positions)
     }
 
     fn cursor_cells_fit_on_board(&self, cursor_cell_positions: &Vec<Position>) -> bool {
         if self.any_is_out_of_bounds(cursor_cell_positions) {
             return false;
         }
-        return self.all_not_occupied_by_stack(cursor_cell_positions);
+        self.all_not_occupied_by_stack(cursor_cell_positions)
     }
 
     fn any_is_out_of_bounds(&self, positions: &Vec<Position>) -> bool {
@@ -167,7 +167,7 @@ impl Board {
 
     fn is_out_of_bounds(&self, pos: &Position) -> bool {
         let (w, h) = (self.num_cols as i32, self.num_total_rows as i32);
-        return pos.x < 0 || pos.x >= w || pos.y < 0 || pos.y >= h;
+        pos.x < 0 || pos.x >= w || pos.y < 0 || pos.y >= h
     }
 
     fn all_not_occupied_by_stack(&self, positions: &Vec<Position>) -> bool {
@@ -322,19 +322,19 @@ fn calc_new_cursor_pos_and_orientation(curr: &Cursor, tetromino_move: TetrominoM
     let cur_y = curr_pos.y;
     match tetromino_move {
         TetrominoMove::AutoDown | TetrominoMove::UserSoftDown => {
-            return curr.offset_copy(Position {x: cur_x, y: cur_y + 1,})
+            curr.offset_copy(Position {x: cur_x, y: cur_y + 1,})
         }
         TetrominoMove::UserHardDown => {
-            return curr.offset_copy(Position {x: cur_x, y: hard_drop_y,})
+            curr.offset_copy(Position {x: cur_x, y: hard_drop_y,})
         }
         TetrominoMove::Left => {
-            return curr.offset_copy(Position {x: cur_x - 1, y: cur_y,})
+            curr.offset_copy(Position {x: cur_x - 1, y: cur_y,})
         }
         TetrominoMove::Right => {
-            return curr.offset_copy(Position {x: cur_x + 1,y: cur_y,})
+            curr.offset_copy(Position {x: cur_x + 1,y: cur_y,})
         }
-        TetrominoMove::RotateCW => return curr.rotate_cw_copy(),
-        TetrominoMove::RotateCCW => return curr.rotate_ccw_copy(),
+        TetrominoMove::RotateCW => curr.rotate_cw_copy(),
+        TetrominoMove::RotateCCW => curr.rotate_ccw_copy(),
     }
 }
 
@@ -350,7 +350,7 @@ fn set_state(cell: &mut Cell, state: cell::State) {
 }
 
 fn is_not_a_full_row(row: &Row) -> bool {
-    return !is_a_full_row(row);
+    !is_a_full_row(row)
 }
 
 fn is_a_full_row(row: &Row) -> bool {
