@@ -172,7 +172,7 @@ impl Renderer {
     }
 }
 
-fn print_rows(rows: &Vec<DisplayRow>, desc: &str) {
+fn print_rows(rows: &[DisplayRow], desc: &str) {
     println!("{desc}:");
     for row in rows.iter() {
         print_row(row);
@@ -238,7 +238,7 @@ fn cell_to_cell_display_state(src: cell::Cell) -> CellDisplayState {
     }
 }
 
-fn get_indices_of_full_rows(rows: &Vec<DisplayRow>) -> Vec<usize> {
+fn get_indices_of_full_rows(rows: &[DisplayRow]) -> Vec<usize> {
     rows.iter()
         .enumerate()
         .filter(|&(_, row)| is_full(row))
