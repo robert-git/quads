@@ -306,7 +306,7 @@ fn make_next_frame_of_row_removal_animation(
 
 fn enlarge_middle_gap(animation_row: &mut DisplayRow) {
     let len = animation_row.len();
-    let i1 = (|| {
+    let i1 = {
         let opt_idx_of_1st_non_stack = animation_row.iter().position(|cell_display_state| {
             !matches!(cell_display_state, CellDisplayState::BeingRemoved)
         });
@@ -320,7 +320,7 @@ fn enlarge_middle_gap(animation_row: &mut DisplayRow) {
         } else {
             len / 2
         }
-    })();
+    };
     let i2 = len - i1 - 1;
     animation_row[i1] = CellDisplayState::Empty;
     animation_row[i2] = CellDisplayState::Empty;
