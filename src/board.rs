@@ -154,14 +154,14 @@ impl Board {
         self.cursor_cells_fit_on_board(&point_positions)
     }
 
-    fn cursor_cells_fit_on_board(&self, cursor_cell_positions: &Vec<Position>) -> bool {
+    fn cursor_cells_fit_on_board(&self, cursor_cell_positions: &[Position]) -> bool {
         if self.any_is_out_of_bounds(cursor_cell_positions) {
             return false;
         }
         self.all_not_occupied_by_stack(cursor_cell_positions)
     }
 
-    fn any_is_out_of_bounds(&self, positions: &Vec<Position>) -> bool {
+    fn any_is_out_of_bounds(&self, positions: &[Position]) -> bool {
         return positions.iter().any(|&pos| self.is_out_of_bounds(&pos));
     }
 
@@ -170,7 +170,7 @@ impl Board {
         pos.x < 0 || pos.x >= w || pos.y < 0 || pos.y >= h
     }
 
-    fn all_not_occupied_by_stack(&self, positions: &Vec<Position>) -> bool {
+    fn all_not_occupied_by_stack(&self, positions: &[Position]) -> bool {
         return positions
             .iter()
             .all(|&pos| self.rows[pos.y as usize][pos.x as usize].state != cell::State::Stack);
@@ -311,7 +311,7 @@ fn write_high_score_to_file(high_score: i32) {
     }
 }
 
-fn increment_ys(positions: &mut Vec<Position>) {
+fn increment_ys(positions: &mut [Position]) {
     positions.iter_mut().for_each(|pos| pos.y += 1);
 }
 
@@ -338,7 +338,7 @@ fn calc_new_cursor_pos_and_orientation(curr: &Cursor, tetromino_move: TetrominoM
     }
 }
 
-fn set_state_of_cells_at_cursor(cursor: &Cursor, rows: &mut Vec<Row>, state: cell::State) {
+fn set_state_of_cells_at_cursor(cursor: &Cursor, rows: &mut [Row], state: cell::State) {
     cursor
         .get_point_positions()
         .iter()
