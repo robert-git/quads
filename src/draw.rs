@@ -277,7 +277,7 @@ fn draw_helper(
 
     for (y, row) in visible_rows.iter().enumerate() {
         for (x, cell_display_state) in row.iter().enumerate() {
-            draw_cell(cell_display_state.clone(), x, y, cell_size);
+            draw_cell(*cell_display_state, x, y, cell_size);
         }
     }
 
