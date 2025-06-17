@@ -157,7 +157,7 @@ fn rotate_90_deg(piece: &Piece, dir: RotationDir) -> Piece {
     piece.from(local_point_positions)
 }
 
-fn offset_to_center(positions: &Vec<Position>, center: &FloatPosition) -> Vec<FloatPosition> {
+fn offset_to_center(positions: &[Position], center: &FloatPosition) -> Vec<FloatPosition> {
     return positions
         .iter()
         .map(|&pos| FloatPosition {
@@ -167,22 +167,22 @@ fn offset_to_center(positions: &Vec<Position>, center: &FloatPosition) -> Vec<Fl
         .collect();
 }
 
-fn swap_xs_and_ys(float_posns: &mut Vec<FloatPosition>) {
+fn swap_xs_and_ys(float_posns: &mut [FloatPosition]) {
     float_posns
         .iter_mut()
         .for_each(|pos| std::mem::swap(&mut pos.x, &mut pos.y));
 }
 
-fn negate_xs(float_posns: &mut Vec<FloatPosition>) {
+fn negate_xs(float_posns: &mut [FloatPosition]) {
     float_posns.iter_mut().for_each(|pos| pos.x = -pos.x);
 }
 
-fn negate_ys(float_posns: &mut Vec<FloatPosition>) {
+fn negate_ys(float_posns: &mut [FloatPosition]) {
     float_posns.iter_mut().for_each(|pos| pos.y = -pos.y);
 }
 
 fn offset_from_center(
-    float_positions: &Vec<FloatPosition>,
+    float_positions: &[FloatPosition],
     center: &FloatPosition,
 ) -> Vec<Position> {
     return float_positions
