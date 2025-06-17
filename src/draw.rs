@@ -221,12 +221,12 @@ fn get_board_state(board: &Board) -> BoardState {
 }
 
 fn rows_to_display_rows(src: Vec<Row>) -> Vec<DisplayRow> {
-    src.into_iter().map(|row| row_to_display_row(row)).collect()
+    src.into_iter().map(row_to_display_row).collect()
 }
 
 fn row_to_display_row(src: Row) -> DisplayRow {
     src.into_iter()
-        .map(|cell| cell_to_cell_display_state(cell))
+        .map(cell_to_cell_display_state)
         .collect()
 }
 
