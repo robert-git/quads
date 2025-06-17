@@ -61,11 +61,11 @@ impl Board {
         let mut cursor_queue = VecDeque::new();
         cursor_queue.push_back(Cursor::from_random_shape_in_list(
             &next_shape_candidates,
-            cursor_start_position.clone(),
+            cursor_start_position,
         ));
         cursor_queue.push_back(Cursor::from_random_shape_in_list(
             &next_shape_candidates,
-            cursor_start_position.clone(),
+            cursor_start_position,
         ));
 
         let cursor = cursor_queue.pop_front().unwrap();
@@ -210,7 +210,7 @@ impl Board {
         self.cursor_queue
             .push_back(Cursor::from_random_shape_in_list(
                 &self.next_shape_candidates,
-                self.cursor_start_position.clone(),
+                self.cursor_start_position,
             ));
         self.cursor = self.cursor_queue.pop_front().unwrap();
         self.set_cell_states_at_cursor(cell::State::Cursor);
