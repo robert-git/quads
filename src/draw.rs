@@ -68,8 +68,8 @@ impl Renderer {
         }
     }
 
-    pub fn draw(&mut self, mut board: &mut Board) {
-        let board_state = get_board_state(&board);
+    pub fn draw(&mut self, board: &mut Board) {
+        let board_state = get_board_state(board);
         let num_cols = board_state.num_cols;
         let num_frames_to_animate = num_cols as i32 / 2;
         let delay_between_animated_frames = std::time::Duration::from_millis(60);
@@ -89,7 +89,7 @@ impl Renderer {
             }
         } else {
             self.draw_normal_non_animated_board_state(
-                &mut board,
+                board,
                 delay_between_animated_frames,
                 &board_state,
             );
@@ -130,7 +130,7 @@ impl Renderer {
         println!("anim row:");
         print_row(&self.animation_row);
         draw_helper(
-            &self.board_state.as_ref().unwrap(),
+            self.board_state.as_ref().unwrap(),
             DrawMode::AnimatingRowRemoval,
             &self.canvas_size,
             self.font_size,
@@ -164,7 +164,7 @@ impl Renderer {
         }
 
         draw_helper(
-            &board_state,
+            board_state,
             DrawMode::NotAnimatingRowRemoval,
             &self.canvas_size,
             self.font_size,
@@ -182,7 +182,7 @@ fn print_rows(rows: &Vec<DisplayRow>, desc: &str) {
 fn print_row(row: &DisplayRow) {
     print!("|");
     for cell in row.iter() {
-        print_cell(&cell);
+        print_cell(cell);
     }
     println!("|");
 }
@@ -241,7 +241,7 @@ fn cell_to_cell_display_state(src: cell::Cell) -> CellDisplayState {
 fn get_indices_of_full_rows(rows: &Vec<DisplayRow>) -> Vec<usize> {
     rows.iter()
         .enumerate()
-        .filter(|&(_, row)| is_full(&row))
+        .filter(|&(_, row)| is_full(row))
         .map(|(index, _)| index)
         .collect()
 }
@@ -297,11 +297,11 @@ fn make_next_frame_of_row_removal_animation(
 ) {
     enlarge_middle_gap(animation_row);
 
-    print_rows(&rows, "Before replacement");
+    print_rows(rows, "Before replacement");
     for &index in indices_of_full_rows_to_animate {
         (*rows)[index] = animation_row.clone();
     }
-    print_rows(&rows, "After replacement");
+    print_rows(rows, "After replacement");
 }
 
 fn enlarge_middle_gap(animation_row: &mut DisplayRow) {
