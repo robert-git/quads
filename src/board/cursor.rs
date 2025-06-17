@@ -15,7 +15,7 @@ impl Cursor {
     pub fn from_random_shape_in_list(shape_list: &Vec<Shape>, position: Position) -> Cursor {
         Cursor {
             position,
-            piece: Piece::new(random_shape(&shape_list)),
+            piece: Piece::new(random_shape(shape_list)),
         }
     }
 
