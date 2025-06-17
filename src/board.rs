@@ -182,7 +182,7 @@ impl Board {
 
     fn remove_full_rows_from_stack(&mut self) -> NumRowsClearedThisUpdate {
         let orig_num_rows = self.rows.len();
-        self.rows.retain(|row| is_not_a_full_row(row));
+        self.rows.retain(is_not_a_full_row);
         let num_removed_rows = orig_num_rows - self.rows.len();
         let new_rows = vec![vec![Cell::new(); self.num_cols]; num_removed_rows];
         self.rows.splice(0..0, new_rows);
@@ -194,10 +194,7 @@ impl Board {
     }
 
     fn stack_height(&self) -> usize {
-        let opt_index_highest_stack_row = self
-            .rows
-            .iter()
-            .position(|row| contains_any_stack_cell(&row));
+        let opt_index_highest_stack_row = self.rows.iter().position(contains_any_stack_cell);
 
         if opt_index_highest_stack_row.is_some() {
             self.num_total_rows - opt_index_highest_stack_row.unwrap()
