@@ -196,8 +196,8 @@ impl Board {
     fn stack_height(&self) -> usize {
         let opt_index_highest_stack_row = self.rows.iter().position(contains_any_stack_cell);
 
-        if opt_index_highest_stack_row.is_some() {
-            self.num_total_rows - opt_index_highest_stack_row.unwrap()
+        if let Some(index_highest_stack_row) = opt_index_highest_stack_row {
+            self.num_total_rows - index_highest_stack_row
         } else {
             0
         }
