@@ -12,7 +12,7 @@ pub enum Shape {
 }
 
 impl Shape {
-    fn get_rotation_origin_and_initial_point_positions(&self) -> (FloatPosition, Vec<Position>) {
+    fn get_rotation_origin_and_initial_point_positions(self) -> (FloatPosition, Vec<Position>) {
         type RotationOrigin = FloatPosition;
         type P = Position;
         match self {
