@@ -74,7 +74,7 @@ impl Renderer {
         let num_frames_to_animate = num_cols as i32 / 2;
         let delay_between_animated_frames = std::time::Duration::from_millis(60);
 
-        if board.row_removal_animation_is_pending() && self.drawing_row_removal_animation == false {
+        if board.row_removal_animation_is_pending() && !self.drawing_row_removal_animation {
             self.initialize_row_removal_animation(board_state.clone(), num_frames_to_animate);
         }
 
