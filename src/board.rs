@@ -302,16 +302,16 @@ fn write_high_score_to_file(high_score: i32) {
     let mut file = match File::create(FILENAME_HIGH_SCORE) {
         Ok(file) => file,
         Err(e) => {
-            eprintln!("Failed to create or open file: {}", e);
+            eprintln!("Failed to create or open file: {e}");
             return; // Exit the function if file opening fails
         }
     };
 
     // Attempt to write the number to the file
-    if let Err(e) = writeln!(file, "{}", high_score) {
-        eprintln!("Failed to write to file: {}", e);
+    if let Err(e) = writeln!(file, "{high_score}") {
+        eprintln!("Failed to write to file: {e}");
     } else {
-        println!("Number {} written to {}", high_score, FILENAME_HIGH_SCORE);
+        println!("Number {high_score} written to {FILENAME_HIGH_SCORE}");
     }
 }
 

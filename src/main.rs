@@ -54,7 +54,7 @@ async fn main() {
                         if tetromino_move == TetrominoMove::UserSoftDown {
                             gp.last_down_move_time = now;
                         }
-                        println!("tetromino_move {:?}", tetromino_move);
+                        println!("tetromino_move {tetromino_move:?}");
                     }
                 }
             }
@@ -169,7 +169,7 @@ fn get_user_action(now: Instant, last_key_time: &mut Instant) -> Option<UserActi
         for key in keys_pressed {
             let opt_action = non_autorepeat_key_to_action(key);
             if let Some(action) = opt_action {
-                println!("action = {:?}", action);
+                println!("action = {action:?}");
                 *last_key_time = now;
                 return opt_action;
             }
