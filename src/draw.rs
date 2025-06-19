@@ -299,7 +299,7 @@ fn make_next_frame_of_row_removal_animation(
 
     print_rows(rows, "Before replacement");
     for &index in indices_of_full_rows_to_animate {
-        (*rows)[index] = animation_row.clone();
+        (*rows)[index].clone_from(animation_row);
     }
     print_rows(rows, "After replacement");
 }
