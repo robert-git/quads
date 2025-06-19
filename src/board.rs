@@ -36,6 +36,7 @@ type NumRowsClearedThisUpdate = usize;
 impl Board {
     // Construction
     pub fn new() -> Self {
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
         rand::srand(macroquad::miniquad::date::now() as _);
         let num_visible_rows: usize = 20;
         let num_total_rows = num_visible_rows + NUM_HIDDEN_ROWS_ABOVE_VISIBLE_ROWS;
@@ -54,6 +55,7 @@ impl Board {
         ];
 
         let cursor_start_position = Position {
+            #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
             x: (num_cols as i32 - 1) / 2,
             y: 0,
         };
@@ -166,11 +168,13 @@ impl Board {
     }
 
     fn is_out_of_bounds(&self, pos: &Position) -> bool {
+        #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
         let (w, h) = (self.num_cols as i32, self.num_total_rows as i32);
         pos.x < 0 || pos.x >= w || pos.y < 0 || pos.y >= h
     }
 
     fn all_not_occupied_by_stack(&self, positions: &[Position]) -> bool {
+        #[allow(clippy::cast_sign_loss)]
         return positions
             .iter()
             .all(|&pos| self.rows[pos.y as usize][pos.x as usize].state != cell::State::Stack);
@@ -339,6 +343,7 @@ fn calc_new_cursor_pos_and_orientation(curr: &Cursor, tetromino_move: TetrominoM
 }
 
 fn set_state_of_cells_at_cursor(cursor: &Cursor, rows: &mut [Row], state: cell::State) {
+    #[allow(clippy::cast_sign_loss)]
     cursor
         .get_point_positions()
         .iter()
