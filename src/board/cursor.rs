@@ -42,7 +42,7 @@ impl Cursor {
 
     pub fn get_point_positions(&self) -> Vec<Position> {
         let local_points = self.piece.get_local_points().clone();
-        offset_points_by_position(local_points, &self.position)
+        offset_points_by_position(local_points, self.position)
     }
 }
 
@@ -50,7 +50,7 @@ fn random_shape(shape_list: &[Shape]) -> Shape {
     shape_list[rand::gen_range(0, shape_list.len())]
 }
 
-fn offset_points_by_position(mut points: Vec<Position>, pos: &Position) -> Vec<Position> {
+fn offset_points_by_position(mut points: Vec<Position>, pos: Position) -> Vec<Position> {
     points.iter_mut().for_each(|point| {
         point.x += pos.x;
         point.y += pos.y;

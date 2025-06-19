@@ -164,10 +164,10 @@ impl Board {
     }
 
     fn any_is_out_of_bounds(&self, positions: &[Position]) -> bool {
-        return positions.iter().any(|&pos| self.is_out_of_bounds(&pos));
+        return positions.iter().any(|&pos| self.is_out_of_bounds(pos));
     }
 
-    fn is_out_of_bounds(&self, pos: &Position) -> bool {
+    fn is_out_of_bounds(&self, pos: Position) -> bool {
         #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
         let (w, h) = (self.num_cols as i32, self.num_total_rows as i32);
         pos.x < 0 || pos.x >= w || pos.y < 0 || pos.y >= h

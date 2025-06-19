@@ -182,7 +182,7 @@ fn print_rows(rows: &[DisplayRow], desc: &str) {
 fn print_row(row: &DisplayRow) {
     print!("|");
     for cell in row.iter() {
-        print_cell(cell);
+        print_cell(&cell);
     }
     println!("|");
 }
