@@ -20,6 +20,6 @@ pub fn to_tetromino_move(action: UserAction) -> Option<TetrominoMove> {
         UserAction::Right     => Some(TetrominoMove::Right),
         UserAction::RotateCW  => Some(TetrominoMove::RotateCW),
         UserAction::RotateCCW => Some(TetrominoMove::RotateCCW),
-        _                     => None,
+        UserAction::Quit      => None,
     }
 }
