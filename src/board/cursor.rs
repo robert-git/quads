@@ -51,9 +51,9 @@ fn random_shape(shape_list: &[Shape]) -> Shape {
 }
 
 fn offset_points_by_position(mut points: Vec<Position>, pos: Position) -> Vec<Position> {
-    points.iter_mut().for_each(|point| {
+    for point in &mut points {
         point.x += pos.x;
         point.y += pos.y;
-    });
+    }
     points
 }
