@@ -131,7 +131,7 @@ impl Renderer {
         print_row(&self.animation_row);
         draw_helper(
             self.board_state.as_ref().unwrap(),
-            DrawMode::AnimatingRowRemoval,
+            &DrawMode::AnimatingRowRemoval,
             &self.canvas_size,
             self.font_size,
         );
@@ -165,7 +165,7 @@ impl Renderer {
 
         draw_helper(
             board_state,
-            DrawMode::NotAnimatingRowRemoval,
+            &DrawMode::NotAnimatingRowRemoval,
             &self.canvas_size,
             self.font_size,
         );
@@ -259,7 +259,7 @@ enum DrawMode {
 
 fn draw_helper(
     board_state: &BoardState,
-    draw_mode: DrawMode,
+    draw_mode: &DrawMode,
     canvas_size: &SizeInPixels,
     font_size: f32,
 ) {
