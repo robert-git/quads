@@ -181,13 +181,13 @@ fn print_rows(rows: &[DisplayRow], desc: &str) {
 
 fn print_row(row: &DisplayRow) {
     print!("|");
-    for cell in row {
+    for &cell in row {
         print_cell(cell);
     }
     println!("|");
 }
 
-fn print_cell(cell_display_state: &CellDisplayState) {
+fn print_cell(cell_display_state: CellDisplayState) {
     let ch = match cell_display_state {
         CellDisplayState::Empty => " ",
         CellDisplayState::Cursor => "*",
@@ -406,10 +406,10 @@ fn draw_ghost_cursor(
 ) {
     ghost_cursor_cell_positions
         .iter()
-        .for_each(|pos| draw_ghost_cursor_cell(pos, num_hidden_board_rows, cell_size));
+        .for_each(|&pos| draw_ghost_cursor_cell(pos, num_hidden_board_rows, cell_size));
 }
 
-fn draw_ghost_cursor_cell(position: &Position, num_hidden_board_rows: usize, cell_size: f32) {
+fn draw_ghost_cursor_cell(position: Position, num_hidden_board_rows: usize, cell_size: f32) {
     let col_idx = position.x;
     let row_idx = position.y - num_hidden_board_rows as i32;
 
