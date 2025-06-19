@@ -116,11 +116,11 @@ impl Piece {
     }
 
     pub fn rotate_cw_copy(&self) -> Self {
-        rotate_90_deg(self, RotationDir::Clockwise)
+        rotate_90_deg(self, &RotationDir::Clockwise)
     }
 
     pub fn rotate_ccw_copy(&self) -> Self {
-        rotate_90_deg(self, RotationDir::Counterclockwise)
+        rotate_90_deg(self, &RotationDir::Counterclockwise)
     }
 
     pub fn get_local_points(&self) -> &Vec<Position> {
@@ -133,7 +133,7 @@ enum RotationDir {
     Clockwise,
 }
 
-fn rotate_90_deg(piece: &Piece, dir: RotationDir) -> Piece {
+fn rotate_90_deg(piece: &Piece, dir: &RotationDir) -> Piece {
     let mut float_points_centered_at_origin =
         offset_to_center(&piece.local_point_positions, &piece.local_rotation_origin);
 
