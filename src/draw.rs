@@ -283,7 +283,7 @@ fn draw_helper(
 
     if matches!(draw_mode, DrawMode::NotAnimatingRowRemoval) {
         draw_ghost_cursor(
-            board_state.ghost_cursor_positions.clone(),
+            &board_state.ghost_cursor_positions,
             board_state.num_hidden_rows,
             cell_size,
         );
@@ -400,7 +400,7 @@ fn draw_cell(cell_display_state: CellDisplayState, col_idx: usize, row_idx: usiz
 }
 
 fn draw_ghost_cursor(
-    ghost_cursor_cell_positions: Vec<Position>,
+    ghost_cursor_cell_positions: &[Position],
     num_hidden_board_rows: usize,
     cell_size: f32,
 ) {
