@@ -161,8 +161,8 @@ fn offset_to_center(positions: &[Position], center: &FloatPosition) -> Vec<Float
     return positions
         .iter()
         .map(|&pos| FloatPosition {
-            x: pos.x as f64 - center.x,
-            y: pos.y as f64 - center.y,
+            x: f64::from(pos.x) - center.x,
+            y: f64::from(pos.y) - center.y,
         })
         .collect();
 }
