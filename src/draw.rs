@@ -4,7 +4,7 @@ use super::board::cursor::piece::Piece;
 use super::board::position::Position;
 use super::board::Board;
 use super::board::Row;
-use macroquad::color::colors::*;
+use macroquad::color::colors::{BEIGE, BROWN, DARKGRAY, GRAY, GREEN, LIME, WHITE};
 use macroquad::color::Color;
 use macroquad::prelude::{
     clear_background, draw_rectangle, draw_rectangle_lines, draw_text, measure_text, screen_height,
