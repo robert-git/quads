@@ -47,15 +47,17 @@ async fn main() {
             request_new_screen_size(canvas_size.width, canvas_size.height);
             clear_background(LIGHTGRAY);
 
-            let step = get_next_game_step(
-                gp.last_down_move_time,
-                gp.auto_drop_interval,
-                &mut gp.last_key_time,
-            );
+            {
+                let step = get_next_game_step(
+                    gp.last_down_move_time,
+                    gp.auto_drop_interval,
+                    &mut gp.last_key_time,
+                );
 
-            gp.opt_tetromino_move = step.opt_tetromino_move;
-            gp.last_down_move_time = step.last_down_move_time;
-            gp.game_over = step.game_over;
+                gp.opt_tetromino_move = step.opt_tetromino_move;
+                gp.last_down_move_time = step.last_down_move_time;
+                gp.game_over = step.game_over;
+            }
 
             if let Some(tetromino_move) = gp.opt_tetromino_move {
                 let (topped_out, num_rows_cleared_this_update) = gp.board.update(tetromino_move);
