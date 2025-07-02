@@ -10,7 +10,7 @@ impl TetrominoMove {
     pub fn resets_down_timer(self) -> bool {
         matches!(
             self,
-            TetrominoMove::UM(UserMove::SoftDown) | TetrominoMove::UM(UserMove::HardDown)
+            TetrominoMove::UM(UserMove::SoftDown | UserMove::HardDown)
         )
     }
 }
