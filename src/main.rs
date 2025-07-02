@@ -13,7 +13,6 @@ use macroquad::prelude::{
 };
 use std::time::{Duration, Instant};
 use tetromino_move::TetrominoMove;
-use user_action::to_tetromino_move;
 use user_action::UserAction;
 use user_move::UserMove;
 
@@ -95,26 +94,28 @@ fn get_next_game_step(
     }
 
     if let Some(action) = get_user_action(now, last_key_time) {
-        if action == UserAction::Quit {
-            return NextGameStep {
-                opt_tetromino_move: None,
-                last_down_move_time,
-                game_over: true,
-            };
-        }
-
-        let opt_tetromino_move = to_tetromino_move(action);
-        if let Some(tetromino_move) = opt_tetromino_move {
-            println!("tetromino_move {tetromino_move:?}");
-            return NextGameStep {
-                opt_tetromino_move,
-                last_down_move_time: if tetromino_move == TetrominoMove::UM(UserMove::SoftDown) {
-                    now
-                } else {
-                    last_down_move_time
-                },
-                game_over: false,
-            };
+        match action {
+            UserAction::Quit => {
+                return NextGameStep {
+                    opt_tetromino_move: None,
+                    last_down_move_time,
+                    game_over: true,
+                }
+            }
+            UserAction::UM(user_move) => {
+                let tetromino_move = TetrominoMove::UM(user_move);
+                println!("tetromino_move {tetromino_move:?}");
+                return NextGameStep {
+                    opt_tetromino_move: Some(tetromino_move),
+                    last_down_move_time: if tetromino_move == TetrominoMove::UM(UserMove::SoftDown)
+                    {
+                        now
+                    } else {
+                        last_down_move_time
+                    },
+                    game_over: false,
+                };
+            }
         }
     }
 
