@@ -3,6 +3,7 @@ pub mod cursor;
 pub mod position;
 
 use super::tetromino_move::TetrominoMove;
+use super::user_move::UserMove;
 use cell::Cell;
 use cursor::piece::Shape;
 use cursor::Cursor;
@@ -111,8 +112,8 @@ impl Board {
             self.cursor = new_cursor;
             self.set_cell_states_at_cursor(cell::State::Cursor);
             match tetromino_move {
-                TetrominoMove::UserSoftDown => self.increment_score_by(1),
-                TetrominoMove::UserHardDown => {
+                TetrominoMove::UM(UserMove::SoftDown) => self.increment_score_by(1),
+                TetrominoMove::UM(UserMove::HardDown) => {
                     self.increment_score_by(12);
                     let (new_topped_out, rows_cleared) = self.run_docking_sequence();
                     topped_out = new_topped_out;
@@ -121,7 +122,7 @@ impl Board {
                 _ => (),
             }
         } else if tetromino_move == TetrominoMove::AutoDown
-            || tetromino_move == TetrominoMove::UserSoftDown
+            || tetromino_move == TetrominoMove::UM(UserMove::SoftDown)
         {
             let (new_topped_out, rows_cleared) = self.run_docking_sequence();
             topped_out = new_topped_out;
@@ -325,20 +326,20 @@ fn calc_new_cursor_pos_and_orientation(curr: &Cursor, tetromino_move: TetrominoM
     let cur_x = curr_pos.x;
     let cur_y = curr_pos.y;
     match tetromino_move {
-        TetrominoMove::AutoDown | TetrominoMove::UserSoftDown => {
+        TetrominoMove::AutoDown | TetrominoMove::UM(UserMove::SoftDown) => {
             curr.offset_copy(Position {x: cur_x, y: cur_y + 1,})
         }
-        TetrominoMove::UserHardDown => {
+        TetrominoMove::UM(UserMove::HardDown) => {
             curr.offset_copy(Position {x: cur_x, y: hard_drop_y,})
         }
-        TetrominoMove::Left => {
+        TetrominoMove::UM(UserMove::Left) => {
             curr.offset_copy(Position {x: cur_x - 1, y: cur_y,})
         }
-        TetrominoMove::Right => {
+        TetrominoMove::UM(UserMove::Right) => {
             curr.offset_copy(Position {x: cur_x + 1,y: cur_y,})
         }
-        TetrominoMove::RotateCW => curr.rotate_cw_copy(),
-        TetrominoMove::RotateCCW => curr.rotate_ccw_copy(),
+        TetrominoMove::UM(UserMove::RotateCW) => curr.rotate_cw_copy(),
+        TetrominoMove::UM(UserMove::RotateCCW) => curr.rotate_ccw_copy(),
     }
 }
 

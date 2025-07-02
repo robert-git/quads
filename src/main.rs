@@ -2,6 +2,7 @@ mod board;
 mod draw;
 mod tetromino_move;
 mod user_action;
+mod user_move;
 
 use board::Board;
 use draw::Renderer;
@@ -14,6 +15,7 @@ use std::time::{Duration, Instant};
 use tetromino_move::TetrominoMove;
 use user_action::to_tetromino_move;
 use user_action::UserAction;
+use user_move::UserMove;
 
 const INPUT_DEBOUNCE: Duration = Duration::from_millis(50);
 const BASELINE_CANVAS_WIDTH: f32 = 640.0;
@@ -51,7 +53,7 @@ async fn main() {
                 } else {
                     gp.opt_tetromino_move = to_tetromino_move(action);
                     if let Some(tetromino_move) = gp.opt_tetromino_move {
-                        if tetromino_move == TetrominoMove::UserSoftDown {
+                        if tetromino_move == TetrominoMove::UM(UserMove::SoftDown) {
                             gp.last_down_move_time = now;
                         }
                         println!("tetromino_move {tetromino_move:?}");
@@ -182,9 +184,9 @@ fn get_user_action(now: Instant, last_key_time: &mut Instant) -> Option<UserActi
 #[rustfmt::skip]
 fn autorepeat_key_to_action(key: KeyCode) -> Option<UserAction> {
     match key {
-        KeyCode::Down  => Some(UserAction::SoftDrop),
-        KeyCode::Left  => Some(UserAction::Left),
-        KeyCode::Right => Some(UserAction::Right),
+        KeyCode::Down  => Some(UserAction::UM(UserMove::SoftDown)),
+        KeyCode::Left  => Some(UserAction::UM(UserMove::Left)),
+        KeyCode::Right => Some(UserAction::UM(UserMove::Right)),
         _              => None,
     }
 }
@@ -192,9 +194,9 @@ fn autorepeat_key_to_action(key: KeyCode) -> Option<UserAction> {
 #[rustfmt::skip]
 fn non_autorepeat_key_to_action(key: KeyCode) -> Option<UserAction> {
     match key {
-        KeyCode::Space => Some(UserAction::HardDrop),
-        KeyCode::Up    => Some(UserAction::RotateCW),
-        KeyCode::Slash => Some(UserAction::RotateCCW),
+        KeyCode::Space => Some(UserAction::UM(UserMove::HardDown)),
+        KeyCode::Up    => Some(UserAction::UM(UserMove::RotateCW)),
+        KeyCode::Slash => Some(UserAction::UM(UserMove::RotateCCW)),
         KeyCode::Q     => Some(UserAction::Quit),
         _              => None,
     }
