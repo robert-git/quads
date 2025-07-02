@@ -7,7 +7,7 @@ pub enum TetrominoMove {
 }
 
 impl TetrominoMove {
-    pub fn resets_down_timer(&self) -> bool {
+    pub fn resets_down_timer(self) -> bool {
         matches!(
             self,
             TetrominoMove::UM(UserMove::SoftDown) | TetrominoMove::UM(UserMove::HardDown)
