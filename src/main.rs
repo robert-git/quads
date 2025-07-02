@@ -106,17 +106,13 @@ fn get_next_game_step(
         let opt_tetromino_move = to_tetromino_move(action);
         if let Some(tetromino_move) = opt_tetromino_move {
             println!("tetromino_move {tetromino_move:?}");
-            if tetromino_move == TetrominoMove::UM(UserMove::SoftDown) {
-                return NextGameStep {
-                    opt_tetromino_move,
-                    last_down_move_time: now,
-                    game_over: false,
-                };
-            }
-
             return NextGameStep {
                 opt_tetromino_move,
-                last_down_move_time,
+                last_down_move_time: if tetromino_move == TetrominoMove::UM(UserMove::SoftDown) {
+                    now
+                } else {
+                    last_down_move_time
+                },
                 game_over: false,
             };
         }
