@@ -107,8 +107,7 @@ fn get_next_game_step(
                 println!("tetromino_move {tetromino_move:?}");
                 return NextGameStep {
                     opt_tetromino_move: Some(tetromino_move),
-                    last_down_move_time: if tetromino_move == TetrominoMove::UM(UserMove::SoftDown)
-                    {
+                    last_down_move_time: if tetromino_move.resets_down_timer() {
                         now
                     } else {
                         last_down_move_time

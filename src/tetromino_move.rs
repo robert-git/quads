@@ -5,3 +5,12 @@ pub enum TetrominoMove {
     AutoDown,
     UM(UserMove),
 }
+
+impl TetrominoMove {
+    pub fn resets_down_timer(&self) -> bool {
+        matches!(
+            self,
+            TetrominoMove::UM(UserMove::SoftDown) | TetrominoMove::UM(UserMove::HardDown)
+        )
+    }
+}
