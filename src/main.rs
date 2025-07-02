@@ -21,6 +21,12 @@ const INPUT_DEBOUNCE: Duration = Duration::from_millis(50);
 const BASELINE_CANVAS_WIDTH: f32 = 640.0;
 const BASELINE_CANVAS_HEIGHT: f32 = 800.0;
 
+struct NextGameStep {
+    opt_tetromino_move: Option<TetrominoMove>,
+    last_down_move_time: Instant,
+    game_over: bool,
+}
+
 #[macroquad::main("Quads")]
 async fn main() {
     let canvas_size = get_window_dims(BASELINE_CANVAS_WIDTH, BASELINE_CANVAS_HEIGHT);
@@ -42,24 +48,15 @@ async fn main() {
             request_new_screen_size(canvas_size.width, canvas_size.height);
             clear_background(LIGHTGRAY);
 
-            let now = Instant::now();
-            if now - gp.last_down_move_time > gp.auto_drop_interval {
-                gp.opt_tetromino_move = Some(TetrominoMove::AutoDown);
-                gp.last_down_move_time = now;
-                println!("Auto down");
-            } else if let Some(action) = get_user_action(now, &mut gp.last_key_time) {
-                if action == UserAction::Quit {
-                    gp.game_over = true;
-                } else {
-                    gp.opt_tetromino_move = to_tetromino_move(action);
-                    if let Some(tetromino_move) = gp.opt_tetromino_move {
-                        if tetromino_move == TetrominoMove::UM(UserMove::SoftDown) {
-                            gp.last_down_move_time = now;
-                        }
-                        println!("tetromino_move {tetromino_move:?}");
-                    }
-                }
-            }
+            let step = get_next_game_step(
+                gp.last_down_move_time,
+                gp.auto_drop_interval,
+                &mut gp.last_key_time,
+            );
+
+            gp.opt_tetromino_move = step.opt_tetromino_move;
+            gp.last_down_move_time = step.last_down_move_time;
+            gp.game_over = step.game_over;
 
             if let Some(tetromino_move) = gp.opt_tetromino_move {
                 let (topped_out, num_rows_cleared_this_update) = gp.board.update(tetromino_move);
@@ -79,6 +76,56 @@ async fn main() {
         }
 
         next_frame().await;
+    }
+}
+
+fn get_next_game_step(
+    last_down_move_time: Instant,
+    auto_drop_interval: Duration,
+    last_key_time: &mut Instant,
+) -> NextGameStep {
+    let now = Instant::now();
+    if now - last_down_move_time > auto_drop_interval {
+        println!("Auto down");
+        return NextGameStep {
+            opt_tetromino_move: Some(TetrominoMove::AutoDown),
+            last_down_move_time: now,
+            game_over: false,
+        };
+    }
+
+    if let Some(action) = get_user_action(now, last_key_time) {
+        if action == UserAction::Quit {
+            return NextGameStep {
+                opt_tetromino_move: None,
+                last_down_move_time,
+                game_over: true,
+            };
+        }
+
+        let opt_tetromino_move = to_tetromino_move(action);
+        if let Some(tetromino_move) = opt_tetromino_move {
+            println!("tetromino_move {tetromino_move:?}");
+            if tetromino_move == TetrominoMove::UM(UserMove::SoftDown) {
+                return NextGameStep {
+                    opt_tetromino_move,
+                    last_down_move_time: now,
+                    game_over: false,
+                };
+            }
+
+            return NextGameStep {
+                opt_tetromino_move,
+                last_down_move_time,
+                game_over: false,
+            };
+        }
+    }
+
+    NextGameStep {
+        opt_tetromino_move: None,
+        last_down_move_time,
+        game_over: false,
     }
 }
 
