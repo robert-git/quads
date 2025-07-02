@@ -93,35 +93,23 @@ fn get_next_game_step(
         };
     }
 
-    if let Some(action) = get_user_action(now, last_key_time) {
-        let step = match action {
-            UserAction::Quit => NextGameStep {
-                opt_tetromino_move: None,
-                last_down_move_time,
-                game_over: true,
-            },
-            UserAction::UM(user_move) => {
-                let tetromino_move = TetrominoMove::UM(user_move);
-                println!("tetromino_move {tetromino_move:?}");
-                NextGameStep {
-                    opt_tetromino_move: Some(tetromino_move),
-                    last_down_move_time: if tetromino_move.resets_down_timer() {
-                        now
-                    } else {
-                        last_down_move_time
-                    },
-                    game_over: false,
-                }
-            }
-        };
-
-        return step;
-    }
+    let (opt_tetromino_move, game_over) = match get_user_action(now, last_key_time) {
+        Some(UserAction::Quit) => (None, true),
+        Some(UserAction::UM(user_move)) => {
+            let tet_move = TetrominoMove::UM(user_move);
+            println!("tetromino_move {tet_move:?}");
+            (Some(tet_move), false)
+        }
+        None => (None, false),
+    };
 
     NextGameStep {
-        opt_tetromino_move: None,
-        last_down_move_time,
-        game_over: false,
+        opt_tetromino_move,
+        last_down_move_time: match opt_tetromino_move {
+            Some(tet_move) if tet_move.resets_down_timer() => now,
+            _ => last_down_move_time,
+        },
+        game_over,
     }
 }
 
