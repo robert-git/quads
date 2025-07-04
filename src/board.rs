@@ -171,7 +171,7 @@ impl Board {
     fn is_out_of_bounds(&self, pos: Position) -> bool {
         #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
         let (w, h) = (self.num_cols as i32, self.num_total_rows as i32);
-        pos.x < 0 || pos.x >= w || pos.y < 0 || pos.y >= h
+        !(0..w).contains(&pos.x) || !(0..h).contains(&pos.y)
     }
 
     fn all_not_occupied_by_stack(&self, positions: &[Position]) -> bool {
