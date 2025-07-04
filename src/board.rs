@@ -166,7 +166,7 @@ impl Board {
     }
 
     fn any_is_out_of_bounds(&self, positions: &[Position]) -> bool {
-        return positions.iter().any(|&pos| self.is_out_of_bounds(pos));
+        positions.iter().any(|&pos| self.is_out_of_bounds(pos))
     }
 
     fn is_out_of_bounds(&self, pos: Position) -> bool {
@@ -361,11 +361,11 @@ fn is_not_a_full_row(row: &Row) -> bool {
 }
 
 fn is_a_full_row(row: &Row) -> bool {
-    return row.iter().all(|&cell| cell.state == cell::State::Stack);
+    row.iter().all(|&cell| cell.state == cell::State::Stack)
 }
 
 fn contains_any_stack_cell(row: &Row) -> bool {
-    return row.iter().any(|&cell| cell.state == cell::State::Stack);
+    row.iter().any(|&cell| cell.state == cell::State::Stack)
 }
 
 fn get_points(num_rows_removed: usize) -> i32 {

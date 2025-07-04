@@ -158,13 +158,13 @@ fn rotate_90_deg(piece: &Piece, dir: &RotationDir) -> Piece {
 }
 
 fn offset_to_center(positions: &[Position], center: &FloatPosition) -> Vec<FloatPosition> {
-    return positions
+    positions
         .iter()
         .map(|&pos| FloatPosition {
             x: f64::from(pos.x) - center.x,
             y: f64::from(pos.y) - center.y,
         })
-        .collect();
+        .collect()
 }
 
 fn swap_xs_and_ys(float_posns: &mut [FloatPosition]) {
@@ -181,17 +181,14 @@ fn negate_ys(float_posns: &mut [FloatPosition]) {
     float_posns.iter_mut().for_each(|pos| pos.y = -pos.y);
 }
 
-fn offset_from_center(
-    float_positions: &[FloatPosition],
-    center: &FloatPosition,
-) -> Vec<Position> {
-    return float_positions
+fn offset_from_center(float_positions: &[FloatPosition], center: &FloatPosition) -> Vec<Position> {
+    float_positions
         .iter()
         .map(|&float_pos| Position {
             x: round_to_nearest_half(float_pos.x + center.x) as _,
             y: round_to_nearest_half(float_pos.y + center.y) as _,
         })
-        .collect();
+        .collect()
 }
 
 fn round_to_nearest_half(x: f64) -> f64 {

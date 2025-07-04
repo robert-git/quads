@@ -225,9 +225,7 @@ fn rows_to_display_rows(src: Vec<Row>) -> Vec<DisplayRow> {
 }
 
 fn row_to_display_row(src: Row) -> DisplayRow {
-    src.into_iter()
-        .map(cell_to_cell_display_state)
-        .collect()
+    src.into_iter().map(cell_to_cell_display_state).collect()
 }
 
 fn cell_to_cell_display_state(src: cell::Cell) -> CellDisplayState {
@@ -247,9 +245,8 @@ fn get_indices_of_full_rows(rows: &[DisplayRow]) -> Vec<usize> {
 }
 
 fn is_full(row: &DisplayRow) -> bool {
-    return row
-        .iter()
-        .all(|&cell_display_state| cell_display_state == CellDisplayState::Stack);
+    row.iter()
+        .all(|&cell_display_state| cell_display_state == CellDisplayState::Stack)
 }
 
 enum DrawMode {
