@@ -145,6 +145,7 @@ fn rotate_90_deg(piece: &Piece, dir: &RotationDir) -> Piece {
     // If the coordinate plane were instead a normal Cartesian plane where positive y is
     // upwards, then clockwise rotation would instead require negating the ys.
     match dir {
+        #[rustfmt::skip]
         RotationDir::Clockwise        => negate_xs(&mut float_points_centered_at_origin),
         RotationDir::Counterclockwise => negate_ys(&mut float_points_centered_at_origin),
     }
