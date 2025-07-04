@@ -145,7 +145,8 @@ impl Board {
 
     fn run_docking_sequence(&mut self) -> (ToppedOut, NumRowsClearedThisUpdate) {
         self.dock_cursor_to_stack();
-        self.rows_just_before_removal_of_full_rows.clone_from(&self.rows);
+        self.rows_just_before_removal_of_full_rows
+            .clone_from(&self.rows);
         let num_rows_cleared = self.remove_full_rows_from_stack();
         let topped_out = self.stack_height() >= self.num_visible_rows;
         self.drop_new_piece();
