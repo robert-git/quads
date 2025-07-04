@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-macroquad = "0.4.12"
+macroquad = "0.4.14"
 phf = { version = "0.11.2", features = ["macros"] }
 time = "0.3.36"
