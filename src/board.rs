@@ -190,10 +190,10 @@ impl Board {
         let orig_num_rows = self.rows.len();
         self.rows.retain(is_not_a_full_row);
         let num_removed_rows = orig_num_rows - self.rows.len();
-        let new_rows = vec![vec![Cell::new(); self.num_cols]; num_removed_rows];
-        self.rows.splice(0..0, new_rows);
-        self.increment_score_by(get_points(num_removed_rows));
         if num_removed_rows > 0 {
+            let new_rows = vec![vec![Cell::new(); self.num_cols]; num_removed_rows];
+            self.rows.splice(0..0, new_rows);
+            self.increment_score_by(get_points(num_removed_rows));
             self.row_removal_animation_is_pending = true;
         }
         num_removed_rows
